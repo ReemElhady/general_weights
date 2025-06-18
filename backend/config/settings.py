@@ -69,6 +69,10 @@ INSTALLED_APPS = [
 
     # apps
     'apps.users',
+    'apps.company',
+    'apps.tickets',
+    'apps.business',
+    'apps.vehicles',
 ]
 
 REST_FRAMEWORK = {

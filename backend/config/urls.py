@@ -43,5 +43,6 @@ urlpatterns = [
     path("api/v1/vehicles/", include("apps.vehicles.urls")),
     path("api/v1/business/", include("apps.business.urls")),
 
+
     # API endpoints
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -45,3 +45,25 @@ uv run python manage.py migrate
 ```bash
 uv run python manage.py runserver
 ```
+
+
+### 2. Setup Fronetend
+
+```bash
+cd general_weights/frontend
+npm install
+
+cp .env.example .env
+```
+
+
+### 6. Start Development Server
+
+```bash
+## First run your Backend using above docs or using this command
+uv run python manage.py runserver
+
+## Run Frontend
+npm run dev
+
+```

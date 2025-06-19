@@ -19,7 +19,7 @@
 #         if digits:
 #             numbers.append(digits)
 #     if numbers:
-#         selected = numbers[1]  
+#         selected = numbers[1]
 #     else:
 #         return None
 
@@ -35,7 +35,7 @@
 
 # def clean_data(data):
 #     # استخرج الجزء اللي يحتوي على الرقم فقط باستخدام تعبير منتظم
-    
+
 #     # نبحث عن أول رقم مع احتمال وجود نقطة وعشرية بعدها
 #     match = re.search(r'[-+]?[0]*([0-9]+(\.[0-9]+)?)', data)
 #     if not match:
@@ -93,7 +93,7 @@
 #                     await self.send(text_data=json.dumps({'error': 'وزن غير صالح'}))
 #                 else:
 #                     await self.send(text_data=json.dumps({'weight': cleaned_weight}))
-                
+
 #             except Exception as e:
 #                 await self.send(text_data=json.dumps({'error': str(e)}))
 #                 break
@@ -114,8 +114,6 @@
 #         return None
 
 
-
-
 import os
 import django
 import asyncio
@@ -127,17 +125,16 @@ from .models import Scale
 import serial
 
 # Set up Django environment to access models outside of typical Django flow
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scaleProject.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scaleProject.settings")
 django.setup()
 
 
 # ----------------- Helper Functions -----------------
 
+
 # Replace whitespace in the string with '#' and return list of characters
 def transform_raw_to_list(data):
-    return ['#' if char.isspace() else char for char in data]
-
-
+    return ["#" if char.isspace() else char for char in data]
 
 
 # Enum for connection state tracking
@@ -150,6 +147,7 @@ class ConnectionState(Enum):
 
 # ----------------- WebSocket Consumer -----------------
 
+
 # WebSocket consumer to manage scale communication
 class ScaleConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
@@ -157,9 +155,9 @@ class ScaleConsumer(AsyncWebsocketConsumer):
         self.state = ConnectionState.DISCONNECTED  # Initial connection state
         self.reader = None  # TCP reader
         self.writer = None  # TCP writer
-        self.ser = None     # Serial object
-        self.scale = None   # Scale model instance
-        self.DELAY = 0.5    # Delay between reads
+        self.ser = None  # Serial object
+        self.scale = None  # Scale model instance
+        self.DELAY = 0.5  # Delay between reads
         self.NUMBER_OF_BITS = 8  # Bytes to read over TCP
 
     async def connect(self):
@@ -169,9 +167,6 @@ class ScaleConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         await self.close_connections()  # Close any open connections
         print("WebSocket disconnected")
-
-
-
 
     # Close TCP/Serial connections cleanly
     async def close_connections(self):
@@ -196,10 +191,6 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 
         # أضف تأخير بسيط للسماح بتحرير المنفذ
         await asyncio.sleep(1.5)
-        
-
-
-
 
     # Receive WebSocket message from frontend
     async def receive(self, text_data):
@@ -217,7 +208,7 @@ class ScaleConsumer(AsyncWebsocketConsumer):
             try:
                 self.scale = await asyncio.to_thread(Scale.objects.get, id=scale_id)
             except Scale.DoesNotExist:
-                await self.send_error('الميزان غير موجود')
+                await self.send_error("الميزان غير موجود")
                 return
 
             # Get settings from DB scale instance
@@ -226,43 +217,40 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 
             # Close previous connection before starting new one
             await self.close_connections()
-            await asyncio.sleep(1.5) 
+            await asyncio.sleep(1.5)
             # Connect via serial or TCP based on scale config
             if self.scale.serial_port:
                 await self.connect_serial()
             elif self.scale.ip and self.scale.port:
                 await self.connect_tcp()
             else:
-                await self.send_error('إعدادات الاتصال غير مكتملة')
+                await self.send_error("إعدادات الاتصال غير مكتملة")
 
         except Exception as e:
-            await self.send_error(f'خطأ غير متوقع: {str(e)}')
+            await self.send_error(f"خطأ غير متوقع: {str(e)}")
 
     # Send an error message back to the client
     async def send_error(self, message):
-        await self.send(text_data=json.dumps({'error': message}))
+        await self.send(text_data=json.dumps({"error": message}))
 
     # Connect to scale via TCP socket
     async def connect_tcp(self):
         try:
             self.state = ConnectionState.CONNECTING
             self.reader, self.writer = await asyncio.open_connection(
-                self.scale.ip,
-                self.scale.port
+                self.scale.ip, self.scale.port
             )
             self.state = ConnectionState.CONNECTED
             print(f"TCP connection established to {self.scale.ip}:{self.scale.port}")
             asyncio.create_task(self.send_weight_loop())  # Start weight reading loop
         except Exception as e:
             self.state = ConnectionState.ERROR
-            await self.send_error(f'فشل الاتصال TCP: {str(e)}')
-
-
-
+            await self.send_error(f"فشل الاتصال TCP: {str(e)}")
 
     # Connect to scale via serial port
     async def connect_serial(self):
         import serial.tools.list_ports
+
         ports = [port.device for port in serial.tools.list_ports.comports()]
         if self.scale.serial_port not in ports:
             await self.send_error("⚠️ لم يتم العثور على المنفذ المتصل بالميزان")
@@ -271,12 +259,18 @@ class ScaleConsumer(AsyncWebsocketConsumer):
         self.state = ConnectionState.CONNECTING
 
         # Get serial config from DB or set default
-        parity = getattr(serial, f'PARITY_{self.scale.parity.upper()}', serial.PARITY_NONE) if self.scale.parity else serial.PARITY_NONE
+        parity = (
+            getattr(serial, f"PARITY_{self.scale.parity.upper()}", serial.PARITY_NONE)
+            if self.scale.parity
+            else serial.PARITY_NONE
+        )
         stopbits = self.scale.stop_bits or serial.STOPBITS_ONE
 
         for attempt in range(3):
             try:
-                print(f"[DEBUG] Attempt {attempt+1} to open serial port: {self.scale.serial_port}")
+                print(
+                    f"[DEBUG] Attempt {attempt + 1} to open serial port: {self.scale.serial_port}"
+                )
 
                 self.ser = serial.Serial(
                     self.scale.serial_port,
@@ -285,8 +279,8 @@ class ScaleConsumer(AsyncWebsocketConsumer):
                     parity=parity,
                     stopbits=stopbits,
                     timeout=0.1,
-                    rtscts=(self.scale.flow_control == 'hardware'),
-                    xonxoff=(self.scale.flow_control == 'Xon/Xoff')
+                    rtscts=(self.scale.flow_control == "hardware"),
+                    xonxoff=(self.scale.flow_control == "Xon/Xoff"),
                 )
 
                 print("[DEBUG] Serial port opened successfully.")
@@ -301,61 +295,67 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 
                 self.state = ConnectionState.CONNECTED
                 print(f"Serial connection established on {self.scale.serial_port}")
-                asyncio.create_task(self.send_serial_weight_loop())  # Start reading loop
+                asyncio.create_task(
+                    self.send_serial_weight_loop()
+                )  # Start reading loop
                 return  # ✅ Exit the loop on success
 
             except Exception as e:
-                print(f"[ERROR] Attempt {attempt+1} failed: {e}")
+                print(f"[ERROR] Attempt {attempt + 1} failed: {e}")
                 await asyncio.sleep(1.5)
 
         # If all attempts fail
         self.state = ConnectionState.ERROR
-        await self.send_error("⚠️ فشل الاتصال بالسيريال بعد عدة محاولات. برجاء التحقق من توصيل الميزان أو إعادة تشغيل الكابل.")
-
-
+        await self.send_error(
+            "⚠️ فشل الاتصال بالسيريال بعد عدة محاولات. برجاء التحقق من توصيل الميزان أو إعادة تشغيل الكابل."
+        )
 
     # Loop to read data from serial and send to WebSocket
     async def send_serial_weight_loop(self):
-            buffer = ""
+        buffer = ""
 
-            while self.state == ConnectionState.CONNECTED and self.ser and self.ser.is_open:
-                try:
-                    data = self.ser.read(self.NUMBER_OF_BITS)  # اقرأ عدد بايت ثابت
-                    if not data:
-                        continue
+        while self.state == ConnectionState.CONNECTED and self.ser and self.ser.is_open:
+            try:
+                data = self.ser.read(self.NUMBER_OF_BITS)  # اقرأ عدد بايت ثابت
+                if not data:
+                    continue
 
-                    buffer += data.decode('ascii', errors='ignore')
+                buffer += data.decode("ascii", errors="ignore")
 
-                    if '\x02' in buffer:  # بداية الرسالة
-                        parts = buffer.split('\x02')
-                        if len(parts) > 1:
-                            raw_read = parts[1]
+                if "\x02" in buffer:  # بداية الرسالة
+                    parts = buffer.split("\x02")
+                    if len(parts) > 1:
+                        raw_read = parts[1]
 
-                            # نهاية الرسالة
-                            for end_marker in ['# #', '\n', '\r']:
-                                if end_marker in raw_read:
-                                    raw_read = raw_read.split(end_marker)[0] + end_marker
-                                    break
+                        # نهاية الرسالة
+                        for end_marker in ["# #", "\n", "\r"]:
+                            if end_marker in raw_read:
+                                raw_read = raw_read.split(end_marker)[0] + end_marker
+                                break
 
-                            structured_raw = transform_raw_to_list(raw_read)
+                        structured_raw = transform_raw_to_list(raw_read)
 
-                            weight_segment = structured_raw[self.scale.weight_start_index:self.scale.weight_end_index]
-                            weight = ''.join(weight_segment)
+                        weight_segment = structured_raw[
+                            self.scale.weight_start_index : self.scale.weight_end_index
+                        ]
+                        weight = "".join(weight_segment)
 
-                            await self.send(text_data=json.dumps({
-                                'raw': raw_read,
-                                'structured_raw': structured_raw,
-                                'weight': weight
-                            }))
-                            buffer = ""
+                        await self.send(
+                            text_data=json.dumps(
+                                {
+                                    "raw": raw_read,
+                                    "structured_raw": structured_raw,
+                                    "weight": weight,
+                                }
+                            )
+                        )
+                        buffer = ""
 
-                except Exception as e:
-                    await self.send_error(f'خطأ في قراءة البيانات من السيريال: {str(e)}')
-                    break
+            except Exception as e:
+                await self.send_error(f"خطأ في قراءة البيانات من السيريال: {str(e)}")
+                break
 
-                await asyncio.sleep(self.DELAY) 
-
-
+            await asyncio.sleep(self.DELAY)
 
     # Loop to read data from TCP and send to WebSocket
     async def send_weight_loop(self):
@@ -363,60 +363,54 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 
         while self.state == ConnectionState.CONNECTED and self.reader:
             try:
-                data = await self.reader.read(self.NUMBER_OF_BITS)  # Read fixed-size chunk
+                data = await self.reader.read(
+                    self.NUMBER_OF_BITS
+                )  # Read fixed-size chunk
                 if not data:
                     break
 
-                buffer += data.decode(errors='ignore')  # Add data to buffer
+                buffer += data.decode(errors="ignore")  # Add data to buffer
 
-                if '\x02' in buffer:  # Check for start of data
-                    parts = buffer.split('\x02')
+                if "\x02" in buffer:  # Check for start of data
+                    parts = buffer.split("\x02")
 
                     if len(parts) > 1:
                         raw_read = parts[1].strip()
 
                         # Look for data end marker
-                        for end_marker in ['# #', '\n', '\r']:
+                        for end_marker in ["# #", "\n", "\r"]:
                             if end_marker in raw_read:
                                 raw_read = raw_read.split(end_marker)[0] + end_marker
                                 break
 
                         print(f"[TCP] Raw Data: {raw_read}")  # Print raw data
 
-                        structured_raw = transform_raw_to_list(raw_read)  # Convert to list
+                        structured_raw = transform_raw_to_list(
+                            raw_read
+                        )  # Convert to list
 
                         # Extract weight using configured indexes
                         start_index = self.scale.weight_start_index
                         end_index = self.scale.weight_end_index
                         weight_segment = structured_raw[start_index:end_index]
-                        weight = ''.join(weight_segment)
+                        weight = "".join(weight_segment)
 
                         # Prepare data to send to client
                         payload = {
-                            'raw': raw_read,
-                            'structured_raw': structured_raw,
-                            'weight': weight
+                            "raw": raw_read,
+                            "structured_raw": structured_raw,
+                            "weight": weight,
                         }
-                        
+
                         await self.send(text_data=json.dumps(payload))
 
                         buffer = ""  # Reset buffer
 
             except Exception as e:
-                await self.send_error(f'خطأ في قراءة البيانات TCP: {str(e)}')
+                await self.send_error(f"خطأ في قراءة البيانات TCP: {str(e)}")
                 break
 
             await asyncio.sleep(self.DELAY)  # Wait between reads
-
-
-
-
-   
-
-
-
-
-
 
 
 # import asyncio
@@ -519,4 +513,3 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 #                 break
 
 #             await asyncio.sleep(0.1)
-

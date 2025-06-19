@@ -73,7 +73,13 @@ INSTALLED_APPS = [
     'apps.tickets',
     'apps.business',
     'apps.vehicles',
+    
+    #soket
+    'channels',
 ]
+
+
+WSGI_APPLICATION = 'config.wsgi.application'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -95,6 +101,10 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE_USE_CSRF": False,
     "USER_DETAILS_SERIALIZER": "apps.users.serializers.UserSerializer",
     "REGISTER_SERIALIZER": "apps.users.serializers.CustomRegisterSerializer",
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
 }
 
 CSRF_COOKIE_SECURE = False
@@ -139,6 +149,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+
+ASGI_APPLICATION = 'business.asgi.application'
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -155,7 +169,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database

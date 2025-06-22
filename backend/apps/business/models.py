@@ -25,6 +25,7 @@ class Scale(models.Model):
     ]
 
     PARITY_CHOICES = [
+
         ("none", "None"),
         ("even", "Even"),
         ("odd", "Odd"),
@@ -78,9 +79,7 @@ class Scale(models.Model):
 
     # TCP Connection
     ip = models.CharField(max_length=250, blank=True, null=True)
-    port = models.PositiveIntegerField(blank=True, null=True)
 
-    # shared field
     delay = models.FloatField(choices=DELAY_CHOICES, default=0.5, blank=True, null=True)
     bits_number = models.IntegerField(choices=BITS_NUMBER_CHOICES)
 
@@ -104,7 +103,6 @@ class Scale(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Client(models.Model):
     STATUS_CHOICES = [

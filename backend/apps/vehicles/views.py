@@ -58,28 +58,17 @@ class DriverDetailAPIView(APIView):
     def delete(self, request, pk):
         driver = get_object_or_404(Driver, pk=pk)
         driver.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class VehicleListCreateAPIView(APIView):
 
     def get(self, request):
-        vehicles = Vehicle.objects.all()
+        blocked_vehicle_ids = BlockedVehicle.objects.filter(is_blocked=True).values_list('vehicle_id', flat=True)
+        vehicles = Vehicle.objects.exclude(id__in=blocked_vehicle_ids)
+        serializer = VehicleSerializer(vehicles, many=True)
+        return Response(serializer.data)
 
-        result = apply_search_order_pagination(
-            queryset=vehicles,
-            request=request,
-            search_fields=['plate', 'license', 'chassis_number', 'model', 'type'],
-            ordering_fields=['id', 'plate', 'license', 'chassis_number', 'last_inspection_date', 'total_weight_operations']
-        )
-        serializer = VehicleSerializer(result['results'], many=True)
-
-        return Response({
-            'count': result['count'],
-            'total_pages': result['total_pages'],
-            'current_page': result['current_page'],
-            'results': serializer.data
-        })
 
     def post(self, request):
         serializer = VehicleSerializer(data=request.data)
@@ -110,7 +99,7 @@ class VehicleDetailAPIView(APIView):
     def delete(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)
         vehicle.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class BlockedVehiclesListAPIView(APIView):

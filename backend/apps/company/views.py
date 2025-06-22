@@ -44,7 +44,7 @@ class EmailSettingsDetail(APIView):
     def delete(self,request,pk):
         emailsetting = get_object_or_404(EmailSettings,pk=pk)
         emailsetting.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
         
         
         
@@ -85,5 +85,5 @@ class SystemSettingsDetail(APIView):
     def delete(self,request,pk):
         systemsettings = get_object_or_404(SystemSettings,pk=pk)
         systemsettings.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
         

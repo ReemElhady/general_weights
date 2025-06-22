@@ -35,6 +35,7 @@
 
 # def clean_data(data):
 #     # استخرج الجزء اللي يحتوي على الرقم فقط باستخدام تعبير منتظم
+
 #     # نبحث عن أول رقم مع احتمال وجود نقطة وعشرية بعدها
 #     match = re.search(r'[-+]?[0]*([0-9]+(\.[0-9]+)?)', data)
 #     if not match:
@@ -92,6 +93,7 @@
 #                     await self.send(text_data=json.dumps({'error': 'وزن غير صالح'}))
 #                 else:
 #                     await self.send(text_data=json.dumps({'weight': cleaned_weight}))
+
 #             except Exception as e:
 #                 await self.send(text_data=json.dumps({'error': str(e)}))
 #                 break
@@ -144,6 +146,7 @@ class ConnectionState(Enum):
 
 
 # ----------------- WebSocket Consumer -----------------
+
 
 # WebSocket consumer to manage scale communication
 class ScaleConsumer(AsyncWebsocketConsumer):
@@ -247,6 +250,7 @@ class ScaleConsumer(AsyncWebsocketConsumer):
     # Connect to scale via serial port
     async def connect_serial(self):
         import serial.tools.list_ports
+
         ports = [port.device for port in serial.tools.list_ports.comports()]
         if self.scale.serial_port not in ports:
             await self.send_error("⚠️ لم يتم العثور على المنفذ المتصل بالميزان")

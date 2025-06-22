@@ -22,6 +22,7 @@ const Scales = () => {
       </div>
 
       {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}
+
     </div>
   );
 };

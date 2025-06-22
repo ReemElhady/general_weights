@@ -11,7 +11,6 @@ const Dashboard = () => {
   useEffect(() => {
     // In a real app, you would fetch user data from the API using the token
     const token = getAuthToken();
-    console.log(token)
     if (token) {
       // Mock user data - in real app, decode token or fetch from API
       setUser({

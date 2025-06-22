@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Scale(models.Model):
     CONNECTION_TYPE_CHOICES = [
@@ -79,7 +80,7 @@ class Scale(models.Model):
     
     #TCP Connection
     ip = models.CharField(max_length=250, blank=True, null=True)
-    port = models.PositiveIntegerField(max_length=10, blank=True, null=True)
+    port = models.PositiveIntegerField(blank=True, null=True)
     
     
     #shared field
@@ -101,3 +102,38 @@ class Scale(models.Model):
     def __str__(self):
         return self.name
     
+class Client(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("inactive", "Inactive"),
+    ]
+
+    name = models.CharField(max_length=200)
+    manager = models.CharField(max_length=200)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    joined_at = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Item(models.Model):
+    SECTOR_CHOICES = [
+        ('طيور', 'طيور'),
+        ('زراعة', 'زراعة'),
+        ('اغنام', 'اغنام'),
+    ]
+
+    TYPE_CHOICES = [
+        ('حي', 'حي'),
+        ('نافق', 'نافق'),
+    ]
+
+    name = models.CharField(max_length=100, null=True)
+    sector = models.CharField(max_length=10, choices=SECTOR_CHOICES)
+    type = models.CharField(max_length=5, choices=TYPE_CHOICES, null=True)
+
+    def __str__(self):
+        return f"{self.sector} - {self.type}"

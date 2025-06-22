@@ -69,7 +69,7 @@ class ScaleDetailAPIView(APIView):
     def delete(self, request, pk):
         scale = self.get_object(pk)
         scale.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class ClientListCreateAPIView(APIView):
@@ -125,7 +125,7 @@ class ClientDetailAPIView(APIView):
     def delete(self, request, pk):
         client = self.get_object(pk)
         client.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class ItemListCreateAPIView(APIView):
@@ -181,4 +181,4 @@ class ItemDetailAPIView(APIView):
     def delete(self, request, pk):
         item = self.get_object(pk)
         item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)

@@ -61,7 +61,7 @@ class Vehicle(models.Model):
 
 class BlockedVehicle(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, null=True, blank=True)
     manipulative_value = models.DecimalField(
         max_digits=10, decimal_places=3, null=True, blank=True
     )

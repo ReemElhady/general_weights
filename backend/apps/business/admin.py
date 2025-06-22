@@ -4,7 +4,7 @@ from .models import Scale, Client, Item
 
 @admin.register(Scale)
 class ScaleAdmin(admin.ModelAdmin):
-    list_display = ("name", "connection_type", "status", "ip", "port")
+    list_display = ("name", "connection_type", "status", "ip")
     search_fields = ("name", "manufacturer", "model")
     list_filter = ("connection_type", "status")
 

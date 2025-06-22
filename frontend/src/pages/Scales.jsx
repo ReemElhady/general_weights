@@ -8,6 +8,10 @@ const Scales = () => {
   const [selectedScales, setSelectedScales] = useState([]);
 
   useEffect(() => {
+    fetchScales();
+  }, []);
+
+  const fetchScales = () => {
     fetch("http://localhost:8000/api/v1/business/scales/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -15,14 +19,16 @@ const Scales = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("API Response:", data);
-        const results = Array.isArray(data) ? data : data.results || [];
+        const results = (Array.isArray(data) ? data : data.results || []).map(s => ({
+          ...s,
+          showMenu: false,
+        }));
         setScales(results);
       })
       .catch((error) => {
         console.error("Fetch error:", error);
       });
-  }, []);
+  };
 
   const toggleSelectAll = () => {
     if (selectedAll) {
@@ -39,19 +45,48 @@ const Scales = () => {
     );
   };
 
+  const toggleMenu = (id) => {
+    setScales(prev =>
+      prev.map(s =>
+        s.id === id ? { ...s, showMenu: !s.showMenu } : { ...s, showMenu: false }
+      )
+    );
+  };
+
+  const handleDelete = async (id) => {
+  if (!window.confirm("هل أنت متأكد من حذف هذا الميزان؟")) return;
+
+  try {
+    const res = await fetch(`http://localhost:8000/api/v1/business/scales/${id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (res.ok) {
+      // هنا تحط إعادة تحميل الصفحة
+      window.location.reload();
+    } else {
+      alert("فشل في الحذف");
+    }
+  } catch (err) {
+    alert("حدث خطأ أثناء الحذف");
+  }
+};
+
+
   return (
     <div className="p-6 space-y-6">
-     <div className="flex items-center justify-start">
-  <button
-    onClick={() => setShowModal(true)}
-    className="border border-[#5F4DEE] text-[#5F4DEE] px-4 py-2 rounded-lg hover:bg-[#5F4DEE] hover:text-white transition-colors"
-  >
-    + إضافة ميزان
-  </button>
-</div>
+      <div className="flex items-center justify-start">
+        <button
+          onClick={() => setShowModal(true)}
+          className="border border-[#5F4DEE] text-[#5F4DEE] px-4 py-2 rounded-lg hover:bg-[#5F4DEE] hover:text-white transition-colors"
+        >
+          + إضافة ميزان
+        </button>
+      </div>
 
-
-            
       <div className="flex flex-wrap gap-4 justify-end items-center">
         <div className="flex items-center gap-2 order-1">
           <input
@@ -82,8 +117,6 @@ const Scales = () => {
         </div>
       </div>
 
-
-      {/* الجدول */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
         <table className="min-w-full text-right" dir="rtl">
           <thead className="bg-gray-100 text-sm text-gray-700">
@@ -105,6 +138,7 @@ const Scales = () => {
               <th className="py-3 px-4">Delay</th>
               <th className="py-3 px-4">عدد البتات</th>
               <th className="py-3 px-4">الحالة</th>
+              <th className="py-3 px-4"></th>
             </tr>
           </thead>
           <tbody className="text-sm">
@@ -139,12 +173,45 @@ const Scales = () => {
                     {scale.status ? "في الخدمة" : "خارج الخدمة (صيانة)"}
                   </span>
                 </td>
+                <td className="py-2 px-4 relative">
+                  <div className="relative inline-block text-left">
+                    <button
+                      type="button"
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => toggleMenu(scale.id)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
+                      </svg>
+                    </button>
+                    {scale.showMenu && (
+                      <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10">
+                        <button
+                          className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right"
+                          onClick={() => alert("تعديل الميزان " + scale.name)}
+                        >
+                          تعديل
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-right"
+                          onClick={() => handleDelete(scale.id)}
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* pagination */}
         <div className="flex justify-between items-center p-4 text-sm text-gray-600">
           <span>1-20 of {scales.length}</span>
           <div className="flex items-center gap-2">
@@ -155,7 +222,6 @@ const Scales = () => {
         </div>
       </div>
 
-      {/* المودال */}
       {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}
     </div>
   );

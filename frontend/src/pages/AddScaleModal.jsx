@@ -72,6 +72,7 @@ const AddScaleModal = ({ onClose }) => {
       });
       if (res.ok) {
         onClose();
+        window.location.reload();
       } else {
         const data = await res.json();
         alert("فشل في إضافة الميزان: " + JSON.stringify(data));

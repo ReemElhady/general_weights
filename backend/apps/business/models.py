@@ -79,7 +79,7 @@ class Scale(models.Model):
 
     # TCP Connection
     ip = models.CharField(max_length=250, blank=True, null=True)
-
+    port = models.IntegerField( blank=True, null=True)
     delay = models.FloatField(choices=DELAY_CHOICES, default=0.5, blank=True, null=True)
     bits_number = models.IntegerField(choices=BITS_NUMBER_CHOICES)
 

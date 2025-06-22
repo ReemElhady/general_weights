@@ -27,7 +27,7 @@ const Navbar = () => {
 
   return (
     
-    <header className="fixed w-[calc(100%-72px)] h-20 top-0 left-0 bg-gray-0 border-b border-gray-100 flex items-center justify-between px-10 z-40">
+<header className="fixed w-[calc(100%-72px)] h-20 top-0 left-0 bg-gray-0 border-b border-gray-100 flex items-center justify-between px-10 z-10">
 
       {/* User controls */}
       <div className="flex items-center gap-6">

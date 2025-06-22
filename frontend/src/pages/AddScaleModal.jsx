@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 
 const AddScaleModal = ({ onClose }) => {
   const [form, setForm] = useState({
@@ -36,7 +37,6 @@ const AddScaleModal = ({ onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const payload = { ...form };
 
     Object.keys(payload).forEach((key) => {
@@ -54,12 +54,11 @@ const AddScaleModal = ({ onClose }) => {
       delete payload.rear_camera_port;
     }
 
-    if (form.connection_type === "tcp") {
-      ["serial_port", "baudrate", "parity", "stop_bits", "flow_control"].forEach(f => delete payload[f]);
+    if (form.connection_type === 'tcp') {
+      ['serial_port', 'baudrate', 'parity', 'stop_bits', 'flow_control'].forEach(f => delete payload[f]);
     }
-
-    if (form.connection_type === "serial") {
-      ["ip", "port"].forEach(f => delete payload[f]);
+    if (form.connection_type === 'serial') {
+      ['ip', 'port'].forEach(f => delete payload[f]);
     }
 
     try {
@@ -75,26 +74,20 @@ const AddScaleModal = ({ onClose }) => {
         onClose();
       } else {
         const data = await res.json();
-        console.error("Error:", data);
         alert("فشل في إضافة الميزان: " + JSON.stringify(data));
       }
     } catch (err) {
-      console.error(err);
       alert("حدث خطأ أثناء الإرسال");
     }
   };
 
-  return (
-    <div dir="rtl" className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[999]">
+  const modal = (
+    <div dir="rtl" className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
       <div className="absolute inset-0" onClick={onClose}></div>
 
-      <div
-        className="relative z-[1000] bg-white p-6 rounded-lg w-full max-w-4xl text-right shadow-lg overflow-y-auto max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-xl font-bold mb-4">إضافة ميزان</h3>
-
-        <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-4">
+      <div className="relative z-[10000] bg-white p-3 rounded-lg w-full max-w-2xl text-right shadow-lg overflow-y-auto max-h-[90vh] text-sm" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-bold mb-3">إضافة ميزان</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
           <div className="flex flex-col">
             <label className="mb-1">اسم الميزان</label>
             <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded" />
@@ -219,8 +212,7 @@ const AddScaleModal = ({ onClose }) => {
               <input name="weight_end_index" value={form.weight_end_index} onChange={handleChange} className="border p-2 rounded" />
             </div>
           </div>
-
-          <div className="col-span-3 flex justify-between items-center">
+          <div className="col-span-3 my-4 flex justify-between items-center">
             <label className="text-sm">الحالة</label>
             <label className="inline-flex items-center cursor-pointer">
               <input
@@ -230,7 +222,7 @@ const AddScaleModal = ({ onClose }) => {
                 onChange={handleChange}
                 className="sr-only"
               />
-              <div className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${form.status ? 'bg-indigo-600' : 'bg-gray-300'}`}>
+              <div className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${form.status ? 'bg-indigo-600' : 'bg-gray-300'}`}> 
                 <span
                   className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${form.status ? 'translate-x-5' : ''}`}
                 ></span>
@@ -279,17 +271,15 @@ const AddScaleModal = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="col-span-3 mt-4">
-            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">
-              إضافة الميزان
-            </button>
+          <div className="col-span-3">
+            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">إضافة الميزان</button>
           </div>
         </form>
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modal, document.body);
 };
 
 export default AddScaleModal;
-
-

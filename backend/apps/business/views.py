@@ -4,15 +4,28 @@ from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 from .models import Scale, Client, Item
 from .serializers import ScaleSerializer, ClientSerializer, ItemSerializer
-
+from rest_framework.permissions import IsAdminUser
+from apps.utils.api_filters import apply_search_order_pagination
 
 class ScaleListCreateAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         scales = Scale.objects.all()
-        serializer = ScaleSerializer(scales, many=True)
-        return Response(serializer.data)
+        result = apply_search_order_pagination(
+            queryset=scales,
+            request=request,
+            search_fields=['name', 'manufacturer', 'model'],
+            ordering_fields=['id', 'name', 'manufacturer', 'model', 'connection_type']
+        )
+
+
+        serializer = ScaleSerializer(result['results'], many=True)
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
     def post(self, request):
         serializer = ScaleSerializer(data=request.data)
@@ -23,7 +36,11 @@ class ScaleListCreateAPIView(APIView):
 
 
 class ScaleDetailAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
+
 
     def get_object(self, pk):
         return get_object_or_404(Scale, pk=pk)
@@ -56,12 +73,24 @@ class ScaleDetailAPIView(APIView):
 
 
 class ClientListCreateAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         clients = Client.objects.all()
-        serializer = ClientSerializer(clients, many=True)
-        return Response(serializer.data)
+        result = apply_search_order_pagination(
+            queryset=clients,
+            request=request,
+            search_fields=['name', 'name', 'phone', 'email'],
+            ordering_fields=['id', 'name', 'joined_at']
+        )
+
+        serializer = ClientSerializer(result['results'], many=True)
+
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
     def post(self, request):
         serializer = ClientSerializer(data=request.data)
@@ -72,7 +101,10 @@ class ClientListCreateAPIView(APIView):
 
 
 class ClientDetailAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
 
     def get_object(self, pk):
         return get_object_or_404(Client, pk=pk)
@@ -97,12 +129,25 @@ class ClientDetailAPIView(APIView):
 
 
 class ItemListCreateAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         items = Item.objects.all()
-        serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data)
+
+        result = apply_search_order_pagination(
+            queryset=items,
+            request=request,
+            search_fields=['name', 'name', 'sector', 'type'],
+            ordering_fields=['id', 'name', 'sector', 'type']
+        )
+
+
+        serializer = ItemSerializer(result['results'], many=True)
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
     def post(self, request):
         serializer = ItemSerializer(data=request.data)
@@ -113,7 +158,9 @@ class ItemListCreateAPIView(APIView):
 
 
 class ItemDetailAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
 
     def get_object(self, pk):
         return get_object_or_404(Item, pk=pk)

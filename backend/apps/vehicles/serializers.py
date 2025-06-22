@@ -14,6 +14,8 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class BlockedVehicleSerializer(serializers.ModelSerializer):
+    vehicle = VehicleSerializer(read_only=True)  # full nested vehicle data
+
     class Meta:
         model = BlockedVehicle
         fields = '__all__'  # or list only fields you want exposed

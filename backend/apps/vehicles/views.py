@@ -4,17 +4,29 @@ from rest_framework import status
 from .models import Driver, Vehicle, BlockedVehicle
 from .serializers import DriverSerializer, VehicleSerializer, BlockedVehicleSerializer, UnblockVehicleSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from django.utils import timezone
+from apps.utils.api_filters import apply_search_order_pagination
 
 
 class DriverListCreateAPIView(APIView):
-    permission_classes = [IsAdminUser]
-
     def get(self, request):
         drivers = Driver.objects.all()
-        serializer = DriverSerializer(drivers, many=True)
-        return Response(serializer.data)
+
+        result = apply_search_order_pagination(
+            queryset=drivers,
+            request=request,
+            search_fields=['name', 'license'],
+            ordering_fields=['id', 'name', 'license', 'license_expiry']
+        )
+
+        serializer = DriverSerializer(result['results'], many=True)
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
     def post(self, request):
         serializer = DriverSerializer(data=request.data)
@@ -25,7 +37,10 @@ class DriverListCreateAPIView(APIView):
 
 
 class DriverDetailAPIView(APIView):
-    permission_classes = [AllowAny]
+    
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
 
     def get(self, request, pk):
         driver = get_object_or_404(Driver, pk=pk)
@@ -47,16 +62,24 @@ class DriverDetailAPIView(APIView):
 
 
 class VehicleListCreateAPIView(APIView):
-    permission_classes = [IsAdminUser]
-    # def get_permissions(self):
-    #     if self.request.method == "POST":
-    #         return [IsAdminUser()]
-    #     return [AllowAny()]
 
     def get(self, request):
         vehicles = Vehicle.objects.all()
-        serializer = VehicleSerializer(vehicles, many=True)
-        return Response(serializer.data)
+
+        result = apply_search_order_pagination(
+            queryset=vehicles,
+            request=request,
+            search_fields=['plate', 'license', 'chassis_number', 'model', 'type'],
+            ordering_fields=['id', 'plate', 'license', 'chassis_number', 'last_inspection_date', 'total_weight_operations']
+        )
+        serializer = VehicleSerializer(result['results'], many=True)
+
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
     def post(self, request):
         serializer = VehicleSerializer(data=request.data)
@@ -67,7 +90,9 @@ class VehicleListCreateAPIView(APIView):
 
 
 class VehicleDetailAPIView(APIView):
-    permission_classes = [AllowAny]
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
 
     def get(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)
@@ -89,19 +114,33 @@ class VehicleDetailAPIView(APIView):
 
 
 class BlockedVehiclesListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        vehicles = BlockedVehicle.objects.filter(
+        queryset = BlockedVehicle.objects.select_related("vehicle").filter(
             status="blocked",
             is_blocked=True
         )
-        serializer = BlockedVehicleSerializer(vehicles, many=True)
-        return Response(serializer.data)
+
+
+        result = apply_search_order_pagination(
+            queryset=queryset,
+            request=request,
+            search_fields=['vehicle__plate', 'vehicle__license', 'vehicle__chassis_number', 'vehicle__model', 'vehicle__type'],
+            ordering_fields=['id', 'vehicle__plate', 'vehicle__license', 'manipulative_date']
+        )
+        
+        serializer = BlockedVehicleSerializer(result['results'], many=True)
+
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
 
 class UnblockVehicleAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def post(self, request, pk):
         try:

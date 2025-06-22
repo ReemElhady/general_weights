@@ -145,7 +145,6 @@ class TicketListAPIView(APIView):
 
         tickets = apply_date_range_filter(tickets, request, 'created_at')
 
-
         result = apply_search_order_pagination(
             queryset=tickets,
             request=request,
@@ -165,8 +164,22 @@ class TicketListAPIView(APIView):
 class IncompleteTicketsListAPIView(APIView):
     def get(self, request):
         tickets = Ticket.objects.filter(is_completed=False)
-        serializer = TicketSerializer(tickets, many=True)
-        return Response(serializer.data)
+
+        result = apply_search_order_pagination(
+            queryset=tickets,
+            request=request,
+            search_fields=['vehicle__plate', 'customer__name', 'driver__name', 'item__name'],
+            ordering_fields=['id', 'vehicle__plate', 'created_at']
+        )
+
+        serializer = TicketSerializer(result['results'], many=True)
+        
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
 
 class TicketRetrieveAPIView(APIView):

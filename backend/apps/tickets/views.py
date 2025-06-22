@@ -10,6 +10,8 @@ from django.core.mail import EmailMessage
 from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
 import config.settings as setting
+from rest_framework.permissions import IsAdminUser
+from apps.utils.api_filters import apply_search_order_pagination, apply_date_range_filter
 
 
 class TicketFirstWeightAPIView(APIView):
@@ -140,8 +142,24 @@ class TicketSecondWeightAPIView(APIView):
 class TicketListAPIView(APIView):
     def get(self, request):
         tickets = Ticket.objects.all()
-        serializer = TicketSerializer(tickets, many=True)
-        return Response(serializer.data)
+
+        tickets = apply_date_range_filter(tickets, request, 'created_at')
+
+
+        result = apply_search_order_pagination(
+            queryset=tickets,
+            request=request,
+            search_fields=['vehicle__plate', 'customer__name', 'driver__name', 'item__name'],
+            ordering_fields=['id', 'vehicle__plate', 'created_at']
+        )
+
+        serializer = TicketSerializer(result['results'], many=True)
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
 
 class IncompleteTicketsListAPIView(APIView):

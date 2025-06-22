@@ -32,7 +32,7 @@ const Login = () => {
 
     try {
       const response = await authAPI.login(formData);
-      setAuthToken(response.token || response.access_token);
+      setAuthToken(response.access);
       success("تم تسجيل الدخول بنجاح", "مرحباً بك");
       navigate("/dashboard");
     } catch (err) {

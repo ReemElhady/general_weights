@@ -1,14 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
+import AddScaleModal from "./AddScaleModal"; // لو المودال في نفس المجلد
+import { getAuthToken } from "../utils/auth";
 
 
 const Scales = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  console.log(getAuthToken);
 
   return (
-    <div className="space-y-8">
-      <div className="font-header-h2 font-[number:var(--header-h2-font-weight)] text-gray-900 text-[length:var(--header-h2-font-size)] text-right tracking-[var(--header-h2-letter-spacing)] leading-[var(--header-h2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--header-h2-font-style)]">
-        الموازين
+    <div className="space-y-8 p-4">
+      <div className="text-right text-2xl font-bold">الموازين</div>
+
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-[#5F4DEE] text-white px-4 py-2 rounded-lg"
+        >
+          + إضافة ميزان
+        </button>
       </div>
 
+      {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}
     </div>
   );
 };

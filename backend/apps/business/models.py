@@ -26,6 +26,7 @@ class Scale(models.Model):
     
     PARITY_CHOICES = [
        ('none', 'None'),
+       
         ('even', 'Even'),
         ('odd', 'Odd'),
         ('mark', 'Mark'),

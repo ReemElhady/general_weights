@@ -4,7 +4,7 @@ from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 from .models import Scale, Client, Item
 from .serializers import ScaleSerializer, ClientSerializer, ItemSerializer
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from apps.utils.api_filters import apply_search_order_pagination
 
 class ScaleListCreateAPIView(APIView):
@@ -40,6 +40,7 @@ class ScaleDetailAPIView(APIView):
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
             return [IsAdminUser()]
+        return [IsAuthenticated()]
 
 
     def get_object(self, pk):
@@ -105,6 +106,7 @@ class ClientDetailAPIView(APIView):
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
             return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def get_object(self, pk):
         return get_object_or_404(Client, pk=pk)
@@ -161,6 +163,7 @@ class ItemDetailAPIView(APIView):
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
             return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def get_object(self, pk):
         return get_object_or_404(Item, pk=pk)

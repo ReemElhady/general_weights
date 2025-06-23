@@ -4,12 +4,11 @@ from rest_framework import status
 from .models import EmailSettings,SystemSettings
 from .serializers import EmailSettingsSerializer,SystemSettingsSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 # Create your views here.
 
 class EmailSettingsView(APIView):
-    permission_classes = [permissions.AllowAny]
     
     def get(self,request):
         emailsettings = EmailSettings.objects.all()
@@ -26,8 +25,11 @@ class EmailSettingsView(APIView):
     
 
 class EmailSettingsDetail(APIView):
-    permission_classes = [permissions.AllowAny]
-    
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
     def get(self,request,pk):
         emailsetting = get_object_or_404(EmailSettings,pk=pk)
         serializer = EmailSettingsSerializer(emailsetting , many = False)
@@ -46,12 +48,8 @@ class EmailSettingsDetail(APIView):
         emailsetting.delete()
         return Response(status=status.HTTP_200_OK)
         
-        
-        
-        
+
 class SystemSettingsView(APIView):
-    permission_classes = [permissions.AllowAny]
-    
     def get(self,request):
         systemsettings = SystemSettings.objects.all()
         serializer = SystemSettingsSerializer(systemsettings,many = True)
@@ -65,9 +63,12 @@ class SystemSettingsView(APIView):
         return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
     
     
-    
 class SystemSettingsDetail(APIView):
-    permission_classes = [permissions.AllowAny]
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
     
     def get(self,request,pk):
         systemsettings = get_object_or_404(SystemSettings ,pk=pk)

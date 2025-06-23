@@ -190,6 +190,9 @@ class TicketRetrieveAPIView(APIView):
 
 
 class TicketDeleteAPIView(APIView):
+    def get_permissions(self):
+        return [IsAdminUser()]
+
     def delete(self, request, pk):
         ticket = get_object_or_404(Ticket, pk=pk)
         ticket.delete()

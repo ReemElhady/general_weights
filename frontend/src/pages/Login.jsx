@@ -4,7 +4,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { authAPI, setAuthToken } from "../utils/auth";
+import { authAPI, setAuthToken, setUserData } from "../utils/auth";
 import { useToast } from "../components/ui/toast";
 
 const Login = () => {
@@ -33,6 +33,7 @@ const Login = () => {
     try {
       const response = await authAPI.login(formData);
       setAuthToken(response.access);
+      setUserData(response.user);
 
       success("تم تسجيل الدخول بنجاح", "مرحباً بك");
       navigate("/dashboard");

@@ -187,15 +187,28 @@ const EditScaleModal = ({ scaleId, onClose }) => {
               ))}
             </select>
           </div>
+          <div className="col-span-3 grid grid-cols-2 gap-2">
           <div className="flex flex-col">
             <label className="mb-1">بداية الوزن</label>
-            <input name="weight_start_index" value={form.weight_start_index} onChange={handleChange} className="border p-2 rounded" />
+            <input
+              name="weight_start_index"
+              value={form.weight_start_index}
+              onChange={handleChange}
+              className="border p-2 rounded"
+            />
           </div>
 
           <div className="flex flex-col">
             <label className="mb-1">نهاية الوزن</label>
-            <input name="weight_end_index" value={form.weight_end_index} onChange={handleChange} className="border p-2 rounded" />
+            <input
+              name="weight_end_index"
+              value={form.weight_end_index}
+              onChange={handleChange}
+              className="border p-2 rounded"
+            />
           </div>
+        </div>
+
 
           <div className="col-span-3 my-4 flex justify-between items-center">
             <label className="text-sm">الحالة</label>

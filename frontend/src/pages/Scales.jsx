@@ -10,6 +10,23 @@ const Scales = () => {
   const [editingScaleId, setEditingScaleId] = useState(null);
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        event.target.closest(".menu-button") ||
+        event.target.closest(".menu-dropdown")
+      ) {
+        return;
+      }
+      setScales((prev) => prev.map((s) => ({ ...s, showMenu: false })));
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     fetchScales();
   }, []);
 
@@ -182,7 +199,7 @@ const Scales = () => {
                   <div className="relative inline-block text-left">
                     <button
                       type="button"
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 hover:text-gray-700 menu-button"
                       onClick={() => toggleMenu(scale.id)}
                     >
                       <svg
@@ -195,7 +212,7 @@ const Scales = () => {
                       </svg>
                     </button>
                     {scale.showMenu && (
-                      <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10">
+                      <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10 menu-dropdown">
                         <button
                           className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right"
                           onClick={() => {
@@ -231,20 +248,18 @@ const Scales = () => {
       </div>
 
       {editingScaleId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto p-4 relative">
+          <div>
             <button
               className="absolute top-2 left-2 text-red-600 font-bold"
               onClick={() => setEditingScaleId(null)}
             >
-              إغلاق
             </button>
             <EditScalePage
               scaleId={editingScaleId}
               onClose={() => setEditingScaleId(null)}
             />
           </div>
-        </div>
+      
       )}
 
       {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}

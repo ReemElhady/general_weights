@@ -316,7 +316,8 @@ class ScaleConsumer(AsyncWebsocketConsumer):
 
         while self.state == ConnectionState.CONNECTED and self.ser and self.ser.is_open:
             try:
-                data = self.ser.read(self.NUMBER_OF_BITS)  # اقرأ عدد بايت ثابت
+                data = self.ser.read(self.NUMBER_OF_BITS)
+                
                 if not data:
                     continue
 

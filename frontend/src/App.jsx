@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastProvider } from "./components/ui/toast";
+import LiveWeightPage from "./pages/LiveWeightPage";
+import LiveWeightWrapper from "./pages/LiveWeightWrapper";
+
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -21,6 +24,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/live-weight/:scaleId" element={<LiveWeightWrapper />} />
 
         {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

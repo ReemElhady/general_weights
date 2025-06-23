@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddScaleModal from "./AddScaleModal";
 import EditScalePage from "./EditScalePage";
+import { Link } from "react-router-dom";
 
 const Scales = () => {
   const [showModal, setShowModal] = useState(false);
@@ -122,9 +123,10 @@ const Scales = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow min-h-[70vh]">
+      {/* SCROLL ONLY INSIDE TABLE */}
+      <div className="bg-white rounded-lg shadow max-h-[70vh] overflow-auto">
         <table className="min-w-full text-right" dir="rtl">
-          <thead className="bg-gray-100 text-sm text-gray-700">
+          <thead className="bg-gray-100 text-sm text-gray-700 sticky top-0 z-10">
             <tr>
               <th className="py-3 px-4">
                 <input
@@ -144,6 +146,7 @@ const Scales = () => {
               <th className="py-3 px-4">Delay</th>
               <th className="py-3 px-4">عدد البتات</th>
               <th className="py-3 px-4">الحالة</th>
+              <th className="py-3 px-4">الوزن المباشر</th>
               <th className="py-3 px-4"></th>
             </tr>
           </thead>
@@ -177,6 +180,14 @@ const Scales = () => {
                   >
                     {scale.status ? "في الخدمة" : "خارج الخدمة (صيانة)"}
                   </span>
+                </td>
+                <td className="py-2 px-4">
+                  <Link
+                    to={`/live-weight/${scale.id}`}
+                    className="text-indigo-600 hover:underline text-sm"
+                  >
+                    عرض الوزن
+                  </Link>
                 </td>
                 <td className="py-2 px-4 relative">
                   <div className="relative inline-block text-left">
@@ -219,15 +230,6 @@ const Scales = () => {
             ))}
           </tbody>
         </table>
-
-        <div className="flex justify-between items-center p-4 text-sm text-gray-600">
-          <span>1-20 of {scales.length}</span>
-          <div className="flex items-center gap-2">
-            <button className="p-1 border rounded">&lt;</button>
-            <span>1/1</span>
-            <button className="p-1 border rounded">&gt;</button>
-          </div>
-        </div>
       </div>
 
       {editingScaleId && (

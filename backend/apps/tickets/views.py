@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Ticket
-from .serializers import TicketSerializer
+from .serializers import TicketSerializer, TicketReadSerializer
 from django.shortcuts import get_object_or_404
 from apps.vehicles.models import Vehicle, BlockedVehicle
 from apps.company.models import SystemSettings, EmailSettings
@@ -155,7 +155,7 @@ class TicketListAPIView(APIView):
             ordering_fields=['id', 'vehicle__plate', 'created_at']
         )
 
-        serializer = TicketSerializer(result['results'], many=True)
+        serializer = TicketReadSerializer(result['results'], many=True)
         return Response({
             'count': result['count'],
             'total_pages': result['total_pages'],
@@ -175,7 +175,7 @@ class IncompleteTicketsListAPIView(APIView):
             ordering_fields=['id', 'vehicle__plate', 'created_at']
         )
 
-        serializer = TicketSerializer(result['results'], many=True)
+        serializer = TicketReadSerializer(result['results'], many=True)
         
         return Response({
             'count': result['count'],

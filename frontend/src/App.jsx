@@ -13,6 +13,7 @@ import BlockedVehicles from "./pages/Blocked_Vehicles";
 import Scales from "./pages/Scales";
 import Drivers from "./pages/Drivers";
 import Settings from "./pages/Settings";
+import FirstWeight from "./pages/FirstWeight";
 
 function App() {
   return (
@@ -114,7 +115,17 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+        <Route
+          path="/tickets/first-weight"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FirstWeight />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </ToastProvider>
   );

@@ -1,0 +1,25 @@
+.first-weight-page {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem;
+    direction: rtl;
+}
+
+.left-panel {
+    flex: 2;
+    text-align: center;
+}
+
+.weight-display {
+    font-size: 100px;
+    color: #655eff;
+    font-family: 'Digital-7', monospace;
+    margin-bottom: 1rem;
+}
+
+.right-panel {
+    flex: 1;
+    background: #f2f2f2;
+    border-radius: 12px;
+    padding: 1rem;
+}

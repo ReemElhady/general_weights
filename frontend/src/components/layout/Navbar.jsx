@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 // Page title map
 const pageTitles = {
   "/dashboard": { title: "لوحة التحكم", description: "نظرة عامة على البيانات" },
+  "/tickets/first-weight": { title: "إنشاء تذكرة جديدة", description: "" },
   "/tickets": { title: "تذاكر الوزن", description: "إلدارة طلبات النقل وعمليات الوزن" },
   "/customers": { title: "العملاء", description: "إدارة العملاء المسجلين ومعلوماتهم" },
   "/vehicles": { title: "السيارات", description: "إدارة السيارات المسجلة ومعلوماتها" },

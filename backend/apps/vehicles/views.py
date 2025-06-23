@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import Driver, Vehicle, BlockedVehicle
 from .serializers import DriverSerializer, VehicleSerializer, BlockedVehicleSerializer, UnblockVehicleSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.utils import timezone
 from apps.utils.api_filters import apply_search_order_pagination
 
@@ -41,6 +41,7 @@ class DriverDetailAPIView(APIView):
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
             return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def get(self, request, pk):
         driver = get_object_or_404(Driver, pk=pk)
@@ -82,6 +83,7 @@ class VehicleDetailAPIView(APIView):
     def get_permissions(self):
         if self.request.method in ['PUT', 'DELETE']:
             return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def get(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)

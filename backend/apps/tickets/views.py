@@ -235,8 +235,11 @@ class TicketYearlyAnalyticsAPIView(APIView):
 class TicketSummaryAnalyticsAPIView(APIView):
 
     def get(self, request):
-        mode = request.query_params.get("mode")  # weekly | monthly | None
+        mode = request.query_params.get("mode")  # 'weekly', 'monthly', or None
         year = request.query_params.get("year")
+        month = request.query_params.get("month")  # Optional month (1–12)
+
+        # Validate year
         try:
             year = int(year) if year else now().year
         except ValueError:
@@ -254,8 +257,19 @@ class TicketSummaryAnalyticsAPIView(APIView):
                 {"month": entry["month"].strftime("%Y-%m"), "count": entry["count"]}
                 for entry in data
             ]
+
         elif mode == "weekly":
-            # Group by week
+            # Use current month if no month is provided
+            try:
+                month = int(month) if month else now().month
+                if not (1 <= month <= 12):
+                    raise ValueError()
+            except ValueError:
+                return Response({"error": "Invalid month. Must be between 1 and 12."}, status=400)
+
+            # Filter by specific month
+            queryset = queryset.filter(created_at__month=month)
+
             data = queryset.annotate(week=TruncWeek("created_at")) \
                             .values("week") \
                             .annotate(count=Count("id")) \
@@ -264,8 +278,9 @@ class TicketSummaryAnalyticsAPIView(APIView):
                 {"week": entry["week"].strftime("%Y-%m-%d"), "count": entry["count"]}
                 for entry in data
             ]
+
         else:
-            # Default: Last 7 days
+            # Default: last 7 days
             today = now().date()
             last_7_days = today - timedelta(days=6)
             data = queryset.filter(created_at__date__range=(last_7_days, today)) \
@@ -281,5 +296,6 @@ class TicketSummaryAnalyticsAPIView(APIView):
         return Response({
             "year": year,
             "mode": mode or "last_7_days",
+            "month": month if mode == "weekly" else None,
             "data": result
         })

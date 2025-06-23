@@ -7,7 +7,7 @@ import path from "path";
 // Navigation menu icons data
 const navIcons = [
   { src: "/dashboard.png", active: "/active-dashboard.png" , path: "/dashboard"},
-  { src: "/ticket.png", active: "/active-ticket.png", path: "/tickets" },
+  { src: "/ticket.png", active: "/active-ticket.png", path: "/tickets/first-weight" },
   { src: "/users.png", active: "/active-users.png" , path: "/customers"},
   { src: "/vehicles.png", active: "/active-vehicles.png", path: "/vehicles"},
   { src: "/drivers.png", active: "/active-drivers.png", path: "/drivers"},

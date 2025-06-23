@@ -4,6 +4,13 @@ from apps.business.serializers import ClientSerializer, ItemSerializer
 from apps.vehicles.serializers import VehicleSerializer, DriverSerializer
 
 class TicketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ticket
+        fields = '__all__'
+
+
+class TicketReadSerializer(serializers.ModelSerializer):
     customer = ClientSerializer(read_only=True)
     driver = DriverSerializer(read_only=True)
     vehicle = VehicleSerializer(read_only=True)

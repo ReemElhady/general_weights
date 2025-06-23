@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Ticket
-from .serializers import TicketSerializer
+from .serializers import TicketSerializer, TicketReadSerializer
 from django.shortcuts import get_object_or_404
 from apps.vehicles.models import Vehicle, BlockedVehicle
 from apps.company.models import SystemSettings, EmailSettings
@@ -12,6 +12,9 @@ from django.core.exceptions import ObjectDoesNotExist
 import config.settings as setting
 from rest_framework.permissions import IsAdminUser
 from apps.utils.api_filters import apply_search_order_pagination, apply_date_range_filter
+from django.utils.timezone import now, timedelta
+from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
+from django.db.models import Count
 
 
 class TicketFirstWeightAPIView(APIView):
@@ -152,7 +155,7 @@ class TicketListAPIView(APIView):
             ordering_fields=['id', 'vehicle__plate', 'created_at']
         )
 
-        serializer = TicketSerializer(result['results'], many=True)
+        serializer = TicketReadSerializer(result['results'], many=True)
         return Response({
             'count': result['count'],
             'total_pages': result['total_pages'],
@@ -172,7 +175,7 @@ class IncompleteTicketsListAPIView(APIView):
             ordering_fields=['id', 'vehicle__plate', 'created_at']
         )
 
-        serializer = TicketSerializer(result['results'], many=True)
+        serializer = TicketReadSerializer(result['results'], many=True)
         
         return Response({
             'count': result['count'],
@@ -197,3 +200,102 @@ class TicketDeleteAPIView(APIView):
         ticket = get_object_or_404(Ticket, pk=pk)
         ticket.delete()
         return Response(status=status.HTTP_200_OK)
+
+class TicketYearlyAnalyticsAPIView(APIView):
+
+    def get(self, request):
+        # Get year from query param or use current year
+        year = request.query_params.get("year")
+        try:
+            year = int(year) if year else now().year
+        except ValueError:
+            return Response({"error": "Invalid year format."}, status=400)
+
+        # Filter tickets by year
+        tickets = Ticket.objects.filter(created_at__year=year)
+
+        # Count tickets by ticket_type
+        ticket_counts = tickets.values('ticket_type').annotate(total=Count('ticket_type'))
+        counts = {entry['ticket_type']: entry['total'] for entry in ticket_counts}
+
+        # Count by completion status
+        completed_count = tickets.filter(is_completed=True).count()
+        not_completed_count = tickets.filter(is_completed=False).count()
+
+        return Response({
+            "year": year,
+            "total_tickets": tickets.count(),
+            "tickets_by_type": counts,
+            "completion_status": {
+                "completed": completed_count,
+                "not_completed": not_completed_count
+            },
+        })
+
+class TicketSummaryAnalyticsAPIView(APIView):
+
+    def get(self, request):
+        mode = request.query_params.get("mode")  # 'weekly', 'monthly', or None
+        year = request.query_params.get("year")
+        month = request.query_params.get("month")  # Optional month (1–12)
+
+        # Validate year
+        try:
+            year = int(year) if year else now().year
+        except ValueError:
+            return Response({"error": "Invalid year format."}, status=400)
+
+        queryset = Ticket.objects.filter(created_at__year=year)
+
+        if mode == "monthly":
+            # Group by month
+            data = queryset.annotate(month=TruncMonth("created_at")) \
+                            .values("month") \
+                            .annotate(count=Count("id")) \
+                            .order_by("month")
+            result = [
+                {"month": entry["month"].strftime("%Y-%m"), "count": entry["count"]}
+                for entry in data
+            ]
+
+        elif mode == "weekly":
+            # Use current month if no month is provided
+            try:
+                month = int(month) if month else now().month
+                if not (1 <= month <= 12):
+                    raise ValueError()
+            except ValueError:
+                return Response({"error": "Invalid month. Must be between 1 and 12."}, status=400)
+
+            # Filter by specific month
+            queryset = queryset.filter(created_at__month=month)
+
+            data = queryset.annotate(week=TruncWeek("created_at")) \
+                            .values("week") \
+                            .annotate(count=Count("id")) \
+                            .order_by("week")
+            result = [
+                {"week": entry["week"].strftime("%Y-%m-%d"), "count": entry["count"]}
+                for entry in data
+            ]
+
+        else:
+            # Default: last 7 days
+            today = now().date()
+            last_7_days = today - timedelta(days=6)
+            data = queryset.filter(created_at__date__range=(last_7_days, today)) \
+                            .annotate(day=TruncDay("created_at")) \
+                            .values("day") \
+                            .annotate(count=Count("id")) \
+                            .order_by("day")
+            result = [
+                {"day": entry["day"].strftime("%Y-%m-%d"), "count": entry["count"]}
+                for entry in data
+            ]
+
+        return Response({
+            "year": year,
+            "mode": mode or "last_7_days",
+            "month": month if mode == "weekly" else None,
+            "data": result
+        })

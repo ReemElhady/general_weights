@@ -12,4 +12,7 @@ urlpatterns = [
     ),
     path("items/", views.ItemListCreateAPIView.as_view(), name="item-list-create"),
     path("items/<int:pk>/", views.ItemDetailAPIView.as_view(), name="item-detail"),
+
+    path("scales/analytics/", views.ScaleStatsAPIView.as_view(), name="scale-stats"),
+
 ]

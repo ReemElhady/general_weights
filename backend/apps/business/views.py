@@ -185,3 +185,16 @@ class ItemDetailAPIView(APIView):
         item = self.get_object(pk)
         item.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class ScaleStatsAPIView(APIView):
+
+    def get(self, request):
+        total_scales = Scale.objects.count()
+        active_scales = Scale.objects.filter(status=True).count()
+
+        return Response({
+            "total_scales": total_scales,
+            "active_scales": active_scales
+        })
+

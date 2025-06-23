@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import RawDataDisplay from "../components/RawDataDisplay";
 
 const DELAY_CHOICES = [1, 0.75, 0.5, 0.25, 0.1];
 const BITS_NUMBER_CHOICES = [5, 6, 7, 8, 16, 32, 64, 128, 256, 512, 1024];
@@ -85,8 +86,9 @@ const EditScaleModal = ({ scaleId, onClose }) => {
           <h3 className="text-base font-bold">تعديل الميزان</h3>
           <button onClick={onClose} className="text-xl font-bold">&times;</button>
         </div>
+
         <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
-          <div className="flex flex-col">
+         <div className="flex flex-col">
             <label className="mb-1">اسم الميزان</label>
             <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded" required />
           </div>
@@ -185,7 +187,6 @@ const EditScaleModal = ({ scaleId, onClose }) => {
               ))}
             </select>
           </div>
-
           <div className="flex flex-col">
             <label className="mb-1">بداية الوزن</label>
             <input name="weight_start_index" value={form.weight_start_index} onChange={handleChange} className="border p-2 rounded" />
@@ -259,6 +260,9 @@ const EditScaleModal = ({ scaleId, onClose }) => {
             <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">حفظ</button>
           </div>
         </form>
+
+        {/* ✅ عرض البيانات الخام عبر WebSocket */}
+        {form?.id && <RawDataDisplay scaleId={form.id} />}
       </div>
     </div>,
     document.body
@@ -266,3 +270,5 @@ const EditScaleModal = ({ scaleId, onClose }) => {
 };
 
 export default EditScaleModal;
+
+

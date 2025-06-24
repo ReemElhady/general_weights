@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AddClientModal from "../components/clients/AddClientModal";
-import EditClientPage from "../components/clients/EditClientPage";
+import EditClientModel from "../components/clients/EditClientModel";
 import { clientAPI } from "../utils/client";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 const Customers = () => {
   const [showModal, setShowModal] = useState(false);
@@ -11,15 +12,14 @@ const Customers = () => {
   const [editingClientId, setEditingClientId] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [searchTerm, setSearchTerm] = useState("");
+  const [ordering, setOrdering] = useState("id"); // default ordering
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchClients();
-    }, 500); // debounce input
-
-
+    }, 500);
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, pagination.page]);
+  }, [searchTerm, pagination.page, ordering]);
 
   const fetchClients = async () => {
     try {
@@ -27,6 +27,7 @@ const Customers = () => {
         page: pagination.page,
         page_size: import.meta.env.VITE_PAGE_SIZE || 10,
         search: searchTerm,
+        ordering: ordering,
       });
 
       const results = (Array.isArray(data) ? data : data.results || []).map((c) => ({
@@ -43,6 +44,27 @@ const Customers = () => {
       alert(err.message);
     }
   };
+
+  const toggleOrdering = (field) => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    setOrdering((prev) => (prev === field ? `-${field}` : field));
+  };
+
+  const renderArrows = (field) => {
+    const isAsc = ordering === field;
+    const isDesc = ordering === `-${field}`;
+    return (
+      <span className="inline-flex flex-col ml-1">
+        <ChevronUp
+          className={`w-3 h-3 ${isAsc ? "text-gray-800" : "text-gray-400"}`}
+        />
+        <ChevronDown
+          className={`w-3 h-3 ${isDesc ? "text-gray-800" : "text-gray-400"}`}
+        />
+      </span>
+    );
+  };
+
 
   const toggleSelectAll = () => {
     if (selectedAll) {
@@ -69,7 +91,6 @@ const Customers = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("هل أنت متأكد من حذف هذا العميل؟")) return;
-
     try {
       await clientAPI.delete(id);
       fetchClients();
@@ -88,9 +109,8 @@ const Customers = () => {
 
   return (
     <div className="pt-2 px-6 space-y-4">
-      {/* Top bar: Add client & Search */}
+      {/* Top bar */}
       <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Add Client Button */}
         <button
           onClick={() => setShowModal(true)}
           className="w-[121px] h-[36px] px-[12px] py-[6px] border border-[#5F4DEE] text-[#5F4DEE] rounded-[6px] flex items-center justify-center gap-2 hover:bg-[#5F4DEE] hover:text-white transition-colors"
@@ -98,17 +118,36 @@ const Customers = () => {
           + إضافة عميل
         </button>
 
-        {/* Search input */}
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => {
-            setPagination((prev) => ({ ...prev, page: 1 }));
-            setSearchTerm(e.target.value);
-          }}
-          placeholder="ابحث عن عميل..."
-          className="w-full max-w-[300px] border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#5F4DEE]"
-        />
+        <div className="flex flex-col w-full max-w-xl">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setPagination((prev) => ({ ...prev, page: 1 }));
+                setSearchTerm(e.target.value);
+              }}
+              placeholder="... البحث عن العملاء"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
+            />
+          </div>
+        </div>
+
       </div>
 
       {/* Table */}
@@ -119,12 +158,37 @@ const Customers = () => {
               <th className="py-3 px-4">
                 <input type="checkbox" checked={selectedAll} onChange={toggleSelectAll} />
               </th>
-              <th className="py-3 px-4">الاسم</th>
-              <th className="py-3 px-4">الشخص المسؤول</th>
-              <th className="py-3 px-4">الهاتف</th>
-              <th className="py-3 px-4">البريد الإلكتروني</th>
-              <th className="py-3 px-4">تاريخ/وقت الاضافة</th>
-              <th className="py-3 px-4">الحالة</th>
+              <th
+                className="py-3 px-4 cursor-pointer select-none text-right"
+                onClick={() => toggleOrdering("id")}
+              >
+                <div className="flex flex-row items-center text-right">
+                  #
+                  {renderArrows("id")}
+                </div>
+              </th>
+              <th
+                className="py-3 px-4 cursor-pointer select-none text-right"
+                onClick={() => toggleOrdering("name")}
+              >
+                <div className="flex flex-row items-center text-right">
+                  الاسم
+                  {renderArrows("name")}
+                </div>
+              </th>
+              <th className="py-3 px-4 text-right">الشخص المسؤول</th>
+              <th className="py-3 px-4 text-right">الهاتف</th>
+              <th className="py-3 px-4 text-right">البريد الإلكتروني</th>
+              <th
+                className="py-3 px-4 cursor-pointer select-none text-right"
+                onClick={() => toggleOrdering("joined_at")}
+              >
+                <div className="flex flex-row items-center text-right">
+                  <span className="ml-auto">تاريخ/وقت الإضافة</span>
+                  {renderArrows("joined_at")}
+                </div>
+              </th>
+              <th className="py-3 px-4 text-right">الحالة</th>
               <th className="py-3 px-4"></th>
             </tr>
           </thead>
@@ -138,6 +202,7 @@ const Customers = () => {
                     onChange={() => toggleSelect(client.id)}
                   />
                 </td>
+                <td className="py-2 px-4">{client.id}</td>
                 <td className="py-2 px-4">{client.name}</td>
                 <td className="py-2 px-4">{client.manager}</td>
                 <td className="py-2 px-4">{client.phone || "—"}</td>
@@ -217,19 +282,22 @@ const Customers = () => {
 
       {/* Modals */}
       {editingClientId && (
-        <EditClientPage
+        <div>
+        <EditClientModel
           clientId={editingClientId}
           onClose={() => {
             setEditingClientId(null);
             fetchClients();
           }}
         />
+        </div>
       )}
-
       {showModal && (
         <AddClientModal
           onClose={() => {
             setShowModal(false);
+            setOrdering("-id"); // newest first
+            setPagination((prev) => ({ ...prev, page: 1 }));
             fetchClients();
           }}
         />

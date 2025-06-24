@@ -33,6 +33,20 @@ export const clientAPI = {
     return  response.json();
   },
 
+  getOne: async (id) => {
+    const response = await fetch(`${BASE_URL}/business/clients/${id}/`, {
+      method: 'GET',
+      headers: authHeadersJSON(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(parseErrorMessage(error));
+    }
+
+    return  response.json();
+  },
+
 
   update: async (id, payload) => {
     const response = await fetch(`${BASE_URL}/business/clients/${id}/`, {

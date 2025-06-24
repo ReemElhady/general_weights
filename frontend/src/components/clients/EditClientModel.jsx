@@ -1,9 +1,9 @@
 
-// EditClientPage.jsx
+// EditClientModel.jsx
 import React, { useState, useEffect } from 'react';
 import { clientAPI } from '../../utils/client';
 
-const EditClientPage = ({ clientId, onClose }) => {
+const EditClientModel = ({ clientId, onClose }) => {
     const [form, setForm] = useState({
         name: '',
         manager: '',
@@ -16,15 +16,14 @@ const EditClientPage = ({ clientId, onClose }) => {
     useEffect(() => {
         const fetchClient = async () => {
             try {
-                const response = await clientAPI.get({ id: clientId });
-                const client = response.results?.[0] || response;
+                const response = await clientAPI.getOne(clientId);
                 setForm({
-                    name: client.name || '',
-                    manager: client.manager || '',
-                    email: client.email || '',
-                    phone: client.phone || '',
-                    notes: client.notes || '',
-                    status: client.status || 'active',
+                    name: response.name || '',
+                    manager: response.manager || '',
+                    email: response.email || '',
+                    phone: response.phone || '',
+                    notes: response.notes || '',
+                    status: response.status || 'active',
                 });
             } catch (err) {
                 alert('فشل في تحميل بيانات العميل');
@@ -155,4 +154,4 @@ const EditClientPage = ({ clientId, onClose }) => {
     );
 };
 
-export default EditClientPage;
+export default EditClientModel;

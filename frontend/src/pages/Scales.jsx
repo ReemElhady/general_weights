@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AddScaleModal from "./AddScaleModal";
 import EditScalePage from "./EditScalePage";
 
@@ -8,6 +9,7 @@ const Scales = () => {
   const [selectedAll, setSelectedAll] = useState(false);
   const [selectedScales, setSelectedScales] = useState([]);
   const [editingScaleId, setEditingScaleId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -212,7 +214,7 @@ const Scales = () => {
                       </svg>
                     </button>
                     {scale.showMenu && (
-                      <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10 menu-dropdown">
+                      <div className="absolute left-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 menu-dropdown">
                         <button
                           className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right"
                           onClick={() => {
@@ -222,6 +224,17 @@ const Scales = () => {
                         >
                           تعديل
                         </button>
+
+                        <button
+                          className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-right"
+                          onClick={() => {
+                            toggleMenu(scale.id);
+                            navigate(`/live-weight/${scale.id}`);
+                          }}
+                        >
+                          الوزن المباشر
+                        </button>
+
                         <button
                           className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-right"
                           onClick={() => handleDelete(scale.id)}
@@ -248,18 +261,16 @@ const Scales = () => {
       </div>
 
       {editingScaleId && (
-          <div>
-            <button
-              className="absolute top-2 left-2 text-red-600 font-bold"
-              onClick={() => setEditingScaleId(null)}
-            >
-            </button>
-            <EditScalePage
-              scaleId={editingScaleId}
-              onClose={() => setEditingScaleId(null)}
-            />
-          </div>
-      
+        <div>
+          <button
+            className="absolute top-2 left-2 text-red-600 font-bold"
+            onClick={() => setEditingScaleId(null)}
+          ></button>
+          <EditScalePage
+            scaleId={editingScaleId}
+            onClose={() => setEditingScaleId(null)}
+          />
+        </div>
       )}
 
       {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}

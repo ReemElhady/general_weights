@@ -1,45 +1,10 @@
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import parseErrorMessage from "./handleError";
 
-// Helper function to parse error messages
-const parseErrorMessage = (error) => {
-  if (typeof error === 'string') {
-    return error;
-  }
-  
-  if (error.non_field_errors && Array.isArray(error.non_field_errors)) {
-    return error.non_field_errors.join('. ');
-  }
-  
-  if (error.detail) {
-    return error.detail;
-  }
-  
-  if (error.message) {
-    return error.message;
-  }
-  
-  // Handle field-specific errors
-  const fieldErrors = [];
-  Object.keys(error).forEach(field => {
-    if (Array.isArray(error[field])) {
-      error[field].forEach(msg => {
-        fieldErrors.push(`${field}: ${msg}`);
-      });
-    } else if (typeof error[field] === 'string') {
-      fieldErrors.push(`${field}: ${error[field]}`);
-    }
-  });
-  
-  if (fieldErrors.length > 0) {
-    return fieldErrors.join('. ');
-  }
-  
-  return 'حدث خطأ غير متوقع';
-};
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const authAPI = {
   login: async (credentials) => {
-    const response = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+    const response = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +21,7 @@ export const authAPI = {
   },
 
   register: async (userData) => {
-    const response = await fetch(`${BASE_URL}/api/v1/auth/register`, {
+    const response = await fetch(`${BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,10 +42,20 @@ export const setAuthToken = (token) => {
   localStorage.setItem("token", token);
 };
 
+export const setUserData = (user) => {
+  localStorage.setItem("user", JSON.stringify(user));
+};
+
 export const removeAuthToken = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("user");
 };
 
 export const getAuthToken = () => {
   return localStorage.getItem("token");
 };
+
+export const getUserData = () => {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+}

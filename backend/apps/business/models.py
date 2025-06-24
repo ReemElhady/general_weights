@@ -112,9 +112,10 @@ class Client(models.Model):
 
     name = models.CharField(max_length=200)
     manager = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
-    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    notes = models.TextField(blank=True, null=True)
     joined_at = models.DateField(auto_now_add=True)
 
     def __str__(self):

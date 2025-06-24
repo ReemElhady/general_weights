@@ -18,7 +18,7 @@ class ScaleListCreateAPIView(APIView):
             ordering_fields=['id', 'name', 'manufacturer', 'model', 'connection_type']
         )
 
-
+    
         serializer = ScaleSerializer(result['results'], many=True)
         return Response({
             'count': result['count'],
@@ -80,7 +80,7 @@ class ClientListCreateAPIView(APIView):
         result = apply_search_order_pagination(
             queryset=clients,
             request=request,
-            search_fields=['name', 'name', 'phone', 'email'],
+            search_fields=['name', 'manager', 'phone', 'email'],
             ordering_fields=['id', 'name', 'joined_at']
         )
 
@@ -138,7 +138,7 @@ class ItemListCreateAPIView(APIView):
         result = apply_search_order_pagination(
             queryset=items,
             request=request,
-            search_fields=['name', 'name', 'sector', 'type'],
+            search_fields=['name', 'sector', 'type'],
             ordering_fields=['id', 'name', 'sector', 'type']
         )
 

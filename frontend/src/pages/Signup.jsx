@@ -4,7 +4,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { authAPI, setAuthToken } from "../utils/auth";
+import { authAPI, setAuthToken, setUserData } from "../utils/auth";
 import { useToast } from "../components/ui/toast";
 
 const Signup = () => {
@@ -42,7 +42,8 @@ const Signup = () => {
 
     try {
       const response = await authAPI.register(formData);
-      setAuthToken(response.token || response.access_token);
+      setAuthToken(response.access);
+      setUserData(response.user);
       success("تم إنشاء الحساب بنجاح", "مرحباً بك في WeighPro");
       navigate("/dashboard");
     } catch (err) {

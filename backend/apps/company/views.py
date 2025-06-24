@@ -15,12 +15,14 @@ class EmailSettingsView(APIView):
         serializer = EmailSettingsSerializer(emailsettings , many = True)
         return Response(serializer.data)
     
-    def post(self,request):
-        serializer = EmailSettingsSerializer(data = request.data)
+    def post(self, request):
+        EmailSettings.objects.all().delete()  
+        serializer = EmailSettingsSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
     
 
@@ -56,6 +58,7 @@ class SystemSettingsView(APIView):
         return Response(serializer.data)
     
     def post(self,request):
+        SystemSettings.objects.all().delete()
         serializer = SystemSettingsSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()

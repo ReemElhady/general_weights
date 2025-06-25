@@ -67,8 +67,23 @@ class VehicleListCreateAPIView(APIView):
     def get(self, request):
         blocked_vehicle_ids = BlockedVehicle.objects.filter(is_blocked=True).values_list('vehicle_id', flat=True)
         vehicles = Vehicle.objects.exclude(id__in=blocked_vehicle_ids)
-        serializer = VehicleSerializer(vehicles, many=True)
-        return Response(serializer.data)
+
+        result = apply_search_order_pagination(
+            queryset=vehicles,
+            request=request,
+            search_fields=['plate', 'license', 'chassis_number', 'model', 'type'],
+            ordering_fields=['id', 'plate', 'license']
+        )
+        
+
+        serializer = VehicleSerializer(result['results'], many=True)
+
+        return Response({
+            'count': result['count'],
+            'total_pages': result['total_pages'],
+            'current_page': result['current_page'],
+            'results': serializer.data
+        })
 
 
     def post(self, request):

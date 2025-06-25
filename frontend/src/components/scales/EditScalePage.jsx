@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import RawDataDisplay from "../components/RawDataDisplay";
+import RawDataDisplay from "../RawDataDisplay";
 
 const DELAY_CHOICES = [1, 0.75, 0.5, 0.25, 0.1];
 const BITS_NUMBER_CHOICES = [5, 6, 7, 8, 16, 32, 64, 128, 256, 512, 1024];

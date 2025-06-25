@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AddScaleModal from "./AddScaleModal";
-import EditScalePage from "./EditScalePage";
-
+import AddScaleModal from "../components/scales/AddScaleModal";
+import EditScalePage from "../components/scales/EditScalePage";
+// import EditDrivertModel from "../components/drivers/EditDriverModel";
 const Scales = () => {
   const [showModal, setShowModal] = useState(false);
   const [scales, setScales] = useState([]);

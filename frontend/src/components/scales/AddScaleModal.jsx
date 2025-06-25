@@ -86,11 +86,17 @@ const AddScaleModal = ({ onClose }) => {
     <div dir="rtl" className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
       <div className="absolute inset-0" onClick={onClose}></div>
 
-      <div className="relative z-[10000] bg-white p-3 rounded-lg w-full max-w-2xl text-right shadow-lg overflow-y-auto max-h-[90vh] text-sm" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base font-bold mb-3">إضافة ميزان</h3>
+      <div className="relative scrollbar-hide z-[10000] bg-white p-3 rounded-lg w-full max-w-2xl text-right shadow-lg overflow-y-auto max-h-[90vh] text-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-semibold">إضافة سائق</h2>
+                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-lg font-bold">
+                            ×
+                        </button>
+                    </div>
         <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
           <div className="flex flex-col">
             <label className="mb-1">اسم الميزان</label>
+            
             <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded" />
           </div>
 

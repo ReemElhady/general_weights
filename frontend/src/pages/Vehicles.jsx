@@ -179,16 +179,20 @@ const Vehicles = () => {
                   {renderArrows("plate")}
                 </div>
               </th>
-              <th className="py-3 px-4 text-right">الشخص المسؤول</th>
-              <th className="py-3 px-4 text-right">الهاتف</th>
-              <th className="py-3 px-4 text-right">البريد الإلكتروني</th>
+              <th className="py-3 px-4 text-right">رقم الشاسيه</th>
+              <th className="py-3 px-4 text-right">الرخصة</th>
+              <th className="py-3 px-4 text-right">الماركة</th>
+              <th className="py-3 px-4 text-right">الموديل</th>
+              <th className="py-3 px-4 text-right">السنة</th>
+              <th className="py-3 px-4 text-right">الوزن في الرخصة (طن)</th>
+              <th className="py-3 px-4 text-right">السعة القصوى (طن)</th>
               <th
                 className="py-3 px-4 cursor-pointer select-none text-right"
-                onClick={() => toggleOrdering("joined_at")}
+                onClick={() => toggleOrdering("last_inspection_date")}
               >
                 <div className="flex flex-row items-center text-right">
-                  <span className="ml-auto">تاريخ/وقت الإضافة</span>
-                  {renderArrows("joined_at")}
+                  <span className="ml-auto">تاريخ أخر فحص</span>
+                  {renderArrows("last_inspection_date")}
                 </div>
               </th>
               <th className="py-3 px-4 text-right">الحالة</th>
@@ -206,11 +210,15 @@ const Vehicles = () => {
                   />
                 </td>
                 <td className="py-2 px-4">{vehicle.id}</td>
-                <td className="py-2 px-4">{vehicle.name}</td>
-                <td className="py-2 px-4">{vehicle.manager}</td>
-                <td className="py-2 px-4">{vehicle.phone || "—"}</td>
-                <td className="py-2 px-4">{vehicle.email || "—"}</td>
-                <td className="py-2 px-4">{vehicle.joined_at}</td>
+                <td className="py-2 px-4">{vehicle.plate}</td>
+                <td className="py-2 px-4">{vehicle.chassis_number || "-"}</td>
+                <td className="py-2 px-4">{vehicle.license || "-"}</td>
+                <td className="py-2 px-4">{vehicle.type || "—"}</td>
+                <td className="py-2 px-4">{vehicle.model || "—"}</td>
+                <td className="py-2 px-4">{vehicle.year || "-"}</td>
+                <td className="py-2 px-4">{vehicle.license_weight || "-"}</td>
+                <td className="py-2 px-4">{vehicle.capacity || "-"}</td>
+                <td className="py-2 px-4">{vehicle.last_inspection_date || "-"}</td>
                 <td className="py-2 px-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${vehicle.status === "active"

@@ -20,6 +20,7 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
         last_inspection_date: NaN,
         first_weight: '',
         total_weight_operations: NaN,
+        year: '',
         notes: '',
         status: 'active',
         driver_ids: [],
@@ -41,15 +42,16 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
                 setForm({
                     plate: vehicleData.plate || '',
                     license: vehicleData.license || '',
-                    license_expiry: vehicleData.license_expiry || '',
+                    license_expiry: vehicleData.license_expiry || NaN,
                     license_weight: vehicleData.license_weight || '',
                     chassis_number: vehicleData.chassis_number || '',
                     model: vehicleData.model || '',
                     type: vehicleData.type || '',
                     capacity: vehicleData.capacity || '',
-                    last_inspection_date: vehicleData.last_inspection_date || '',
+                    last_inspection_date: vehicleData.last_inspection_date || NaN,
                     first_weight: vehicleData.first_weight || '',
-                    total_weight_operations: vehicleData.total_weight_operations || '',
+                    total_weight_operations: vehicleData.total_weight_operations || NaN,
+                    year: vehicleData.year || '',
                     notes: vehicleData.notes || '',
                     status: vehicleData.status || 'active',
                     driver_ids: assignedDrivers.map((d) => d.id),
@@ -72,7 +74,7 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await driverAPI.update(vehicleId, form);
+            await vehicleAPI.update(vehicleId, form);
             onClose();
             success("", "تم حفظ التعديلات بنجاح");
         } catch (err) {
@@ -94,50 +96,142 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
 
                 <div className="overflow-y-auto scrollbar-hide max-h-[calc(100vh-150px)] p-6">
                     <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="flex flex-col col-span-2">
-                            <label className="mb-1">الاسم الكامل *</label>
+                    <div className="grid grid-cols-2 gap-4 col-span-3">
+                            <div className="flex flex-col">
+                                <label className="mb-1">رقم السيارة *</label>
+                                <input
+                                    name="plate"
+                                    value={form.plate}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="mb-1">رقم الشاسيه</label>
+                                <input
+                                    name="chassis_number"
+                                    value={form.chassis_number}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 col-span-3">
+                            <div className="flex flex-col">
+                                <label className="mb-1">الماركة</label>
+                                <input
+                                    name="type"
+                                    value={form.type}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="mb-1">الموديل</label>
+                                <input
+                                    name="model"
+                                    value={form.model}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="mb-1">السنة</label>
+                                <select
+                                    name="year"
+                                    value={form.year}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                >
+                                    <option value="">اختر السنة</option>
+                                    {Array.from({ length: new Date().getFullYear() - 1979 }, (_, i) => {
+                                        const year = new Date().getFullYear() - i;
+                                        return (
+                                            <option key={year} value={year}>
+                                                {year}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div className="flex flex-col">
+                            <label className="mb-1">الوزن الفارغ (طن)</label>
                             <input
-                                name="name"
-                                value={form.name}
+                                type='number'
+                                name="first_weight"
+                                value={form.first_weight}
                                 onChange={handleChange}
-                                className="border rounded px-3 py-2 focus:outline-none focus:ring w-full"
-                                required
+                                className="border rounded px-3 py-2 focus:outline-none focus:ring"
                             />
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="mb-1">رقم الرخصة *</label>
+                            <label className="mb-1">الوزن في الرخصة (طن)</label>
                             <input
-                                name="license"
-                                value={form.license}
+                                type='number'
+                                name="license_weight"
+                                value={form.license_weight}
                                 onChange={handleChange}
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring"
-                                required
                             />
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="mb-1">فئة الرخصة *</label>
+                            <label className="mb-1">السعة القصوى (طن)</label>
                             <input
-                                name="license_category"
-                                value={form.license_category}
+                                type='number'
+                                name="capacity"
+                                value={form.capacity}
                                 onChange={handleChange}
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring"
                             />
                         </div>
 
-                        <div className="flex flex-col col-span-2">
-                            <label className="mb-1 text-right">تاريخ انتهاء الرخصة *</label>
+                        <div className="grid grid-cols-2 gap-4 col-span-3">
+                            <div className="flex flex-col">
+                                <label className="mb-1">الرخصة *</label>
+                                <input
+                                    name="license"
+                                    value={form.license}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="mb-1">تاريخ إنتهاء الرخصة</label>
+                                <input
+                                    type="date"
+                                    name="license_expiry"
+                                    value={form.license_expiry}
+                                    onChange={handleChange}
+                                    className="border rounded px-3 py-2 focus:outline-none focus:ring text-right"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Full width: License Expiry */}
+                        <div className="flex flex-col col-span-3">
+                            <label className="mb-1 text-right">تاريخ أخر فحص</label>
                             <input
                                 type="date"
-                                name="license_expiry"
-                                value={form.license_expiry}
+                                name="last_inspection_date"
+                                value={form.last_inspection_date}
                                 onChange={handleChange}
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring text-right"
-                            />
+                                />
                         </div>
 
-                        <div className="flex flex-col col-span-2">
+                        {/* Full width: Notes */}
+                        <div className="flex flex-col col-span-3">
                             <label className="mb-1">ملاحظات</label>
                             <textarea
                                 name="notes"
@@ -149,7 +243,8 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
                             />
                         </div>
 
-                        <div className="flex justify-between items-center col-span-2 mt-2">
+                        {/* Status Switch */}
+                        <div className="flex justify-between items-center col-span-3 mt-2">
                             <label className="text-sm">الحالة</label>
                             <label className="inline-flex items-center cursor-pointer">
                                 <input
@@ -173,44 +268,49 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
                             </label>
                         </div>
 
-                        <div className="flex flex-col col-span-2">
-                            <label className="mb-1">اختر السيارات</label>
+                        {/* Driver Selection */}
+                        <div className="flex flex-col col-span-3">
+                            <label className="mb-1">اختر السائق</label>
                             <select
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring"
                                 onChange={(e) => {
                                     const selectedId = parseInt(e.target.value);
-                                    const selected = drivers.find((v) => v.id === selectedId);
-                                    if (selected && !form.vehicle_ids.includes(selected.id)) {
-                                        setSelectedDrivers((prev) => [...prev, selected]);
+                                    const selectedDriver = drivers.find((d) => d.id === selectedId);
+                                    if (selectedDriver && !selectedDrivers.find((d) => d.id === selectedId)) {
+                                        setSelectedDrivers((prev) => [...prev, selectedDriver]);
                                         setForm((prev) => ({
                                             ...prev,
-                                            vehicle_ids: [...prev.vehicle_ids, selected.id],
+                                            driver_ids: [...prev.driver_ids, selectedId],
                                         }));
                                     }
                                 }}
                                 defaultValue=""
                             >
-                                <option value="" disabled>اختر السيارة...</option>
-                                {drivers.map((v) => (
-                                    <option key={v.id} value={v.id}>
-                                        {v.plate || `سيارة ${v.id}`}
+                                <option value="" disabled>اختر السائق ...</option>
+                                {drivers.map((driver) => (
+                                    <option key={driver.id} value={driver.id}>
+                                        {driver.name || `سائق ${driver.id}`}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
+                        {/* Selected Drivers */}
                         {selectedDrivers.length > 0 && (
-                            <div className="flex flex-wrap gap-2 col-span-2 mt-2">
-                                {selectedDrivers.map((v) => (
-                                    <div key={v.id} className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">
-                                        <span>{v.plate || `مركبة ${v.id}`}</span>
+                            <div className="flex flex-wrap gap-2 col-span-3 mt-2">
+                                {selectedDrivers.map((d) => (
+                                    <div
+                                        key={d.id}
+                                        className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
+                                    >
+                                        <span>{d.name || `سائق ${d.id}`}</span>
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setSelectedDrivers((prev) => prev.filter((x) => x.id !== v.id));
+                                                setSelectedDrivers((prev) => prev.filter((x) => x.id !== d.id));
                                                 setForm((prev) => ({
                                                     ...prev,
-                                                    vehicle_ids: prev.vehicle_ids.filter((id) => id !== v.id),
+                                                    driver_ids: prev.driver_ids.filter((id) => id !== d.id),
                                                 }));
                                             }}
                                             className="text-indigo-600 hover:text-red-600 font-bold"
@@ -222,7 +322,7 @@ const EditVehicleModel = ({ vehicleId, onClose }) => {
                             </div>
                         )}
 
-                        <div className="col-span-2 mt-4">
+                        <div className="col-span-3 mt-4">
                             <button
                                 type="submit"
                                 className="w-full bg-indigo-600 hover:bg-indigo-700 transition text-white py-2 rounded font-semibold"

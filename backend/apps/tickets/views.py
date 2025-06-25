@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import Ticket
 from .serializers import TicketSerializer, TicketReadSerializer
 from django.shortcuts import get_object_or_404
-from apps.vehicles.models import Vehicle, BlockedVehicle
+from apps.vehicles.models import Vehicle, BlockedVehicle, Driver
 from apps.company.models import SystemSettings, EmailSettings
 from django.core.mail import EmailMessage
 from decimal import Decimal
@@ -42,6 +42,14 @@ class TicketFirstWeightAPIView(APIView):
                 return Response(
                     {"error": "Vehicle not found."}, status=status.HTTP_404_NOT_FOUND
                 )
+            driver_id = request.data.get("driver")
+            
+            driver = None
+            if driver_id:
+                try:
+                    driver = Driver.objects.get(id=driver_id)
+                except Driver.DoesNotExist:
+                    driver = None
 
             try:
                 system_settings = SystemSettings.objects.first()
@@ -62,7 +70,7 @@ class TicketFirstWeightAPIView(APIView):
                 if difference > threshold:
                     BlockedVehicle.objects.create(
                         vehicle=vehicle,
-                        driver=vehicle.driver,
+                        driver=driver,
                         manipulative_value=difference,
                         manipulative_user=request.user
                         if request.user.is_authenticated
@@ -79,7 +87,7 @@ class TicketFirstWeightAPIView(APIView):
                             🚨 Vehicle Blocked for Weight Manipulation
 
                             Vehicle: {vehicle.plate}
-                            Driver: {vehicle.driver}
+                            Driver: {driver}
                             Previous Vehicle First Weight: {vehicle.first_weight}
                             New Ticket First Weight: {ticket_first_weight}
                             Difference: {difference}
@@ -188,7 +196,7 @@ class IncompleteTicketsListAPIView(APIView):
 class TicketRetrieveAPIView(APIView):
     def get(self, request, pk):
         ticket = get_object_or_404(Ticket, pk=pk)
-        serializer = TicketSerializer(ticket)
+        serializer = TicketReadSerializer(ticket)
         return Response(serializer.data)
 
 

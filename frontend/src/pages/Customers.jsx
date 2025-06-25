@@ -15,7 +15,7 @@ const Customers = () => {
   const [editingClientId, setEditingClientId] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [searchTerm, setSearchTerm] = useState("");
-  const [ordering, setOrdering] = useState("id"); // default ordering
+  const [ordering, setOrdering] = useState("id"); 
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -27,6 +27,7 @@ const Customers = () => {
   const fetchClients = async () => {
     try {
       const data = await clientAPI.get({
+        // Params
         page: pagination.page,
         page_size: import.meta.env.VITE_PAGE_SIZE || 10,
         search: searchTerm,
@@ -121,6 +122,7 @@ const Customers = () => {
         >
           + إضافة عميل
         </button>
+
 
         <div className="flex flex-col w-full max-w-xl">
           <div className="relative w-full">

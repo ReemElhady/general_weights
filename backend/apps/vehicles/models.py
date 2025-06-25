@@ -28,7 +28,7 @@ class Driver(models.Model):
 
 
 class Vehicle(models.Model):
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, null=True, blank=True)
+    drivers = models.ManyToManyField("Driver", related_name="vehicles", blank=True)
     plate = models.CharField(max_length=10)
     license = models.CharField(max_length=14)
     chassis_number = models.CharField(max_length=50, null=True, blank=True)

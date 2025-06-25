@@ -72,7 +72,7 @@ class VehicleListCreateAPIView(APIView):
             queryset=vehicles,
             request=request,
             search_fields=['plate', 'license', 'chassis_number', 'model', 'type'],
-            ordering_fields=['id', 'plate', 'license']
+            ordering_fields=['id', 'plate', 'license', 'last_inspection_date']
         )
         
 

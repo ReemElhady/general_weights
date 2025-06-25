@@ -21,6 +21,7 @@ const AddVehicleModal = ({ onClose }) => {
         last_inspection_date: NaN,
         first_weight: '',
         total_weight_operations: NaN,
+        year: '',
         notes: '',
         status: 'active',
         driver_ids: [],

@@ -3,8 +3,10 @@ import AddDriverModal from "../components/drivers/AddDriverModal";
 import EditDrivertModel from "../components/drivers/EditDriverModel";
 import { driverAPI } from "../utils/driver";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { useToast } from "../components/ui/toast";
 
 const Drivers = () => {
+  const { success, error } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [drivers, setDrivers] = useState([]);
   const [selectedDrivers, setSelectedDrivers] = useState([]);
@@ -94,8 +96,9 @@ const Drivers = () => {
     try {
       await driverAPI.delete(id);
       fetchDrivers();
+      success("", "تم حذف السائق بنجاح");
     } catch (err) {
-      alert("حدث خطأ أثناء الحذف: " + err.message);
+      error("", "فشل في حذف السائق");
     }
   };
 

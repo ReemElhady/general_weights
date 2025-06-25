@@ -31,8 +31,10 @@ class Vehicle(models.Model):
     drivers = models.ManyToManyField("Driver", related_name="vehicles", blank=True)
     plate = models.CharField(max_length=10)
     license = models.CharField(max_length=14)
+    license_expiry = models.DateField(null=True, blank=True)
     chassis_number = models.CharField(max_length=50, null=True, blank=True)
     model = models.CharField(max_length=100, null=True, blank=True)
+    year = models.CharField(max_length=10, null=True, blank=True)
     type = models.CharField(max_length=100, null=True, blank=True)
     capacity = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True

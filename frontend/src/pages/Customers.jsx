@@ -3,8 +3,11 @@ import AddClientModal from "../components/clients/AddClientModal";
 import EditClientModel from "../components/clients/EditClientModel";
 import { clientAPI } from "../utils/client";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { useToast } from "../components/ui/toast";
+
 
 const Customers = () => {
+  const { success, error } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [clients, setClients] = useState([]);
   const [selectedClients, setSelectedClients] = useState([]);
@@ -94,8 +97,9 @@ const Customers = () => {
     try {
       await clientAPI.delete(id);
       fetchClients();
+      success("", "تم حذف العميل بنجاح");
     } catch (err) {
-      alert("حدث خطأ أثناء الحذف: " + err.message);
+      error("", "فشل في حذف العميل");
     }
   };
 

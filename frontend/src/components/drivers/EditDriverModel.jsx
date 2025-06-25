@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { driverAPI } from '../../utils/driver';
 import { vehicleAPI } from '../../utils/vehicle';
+import { useToast } from "../ui/toast";
 
 const EditDrivertModel = ({ driverId, onClose }) => {
     const [vehicles, setVehicles] = useState([]);
     const [selectedVehicles, setSelectedVehicles] = useState([]);
+    const { success, error } = useToast();
+    
     const [form, setForm] = useState({
         name: '',
         license: '',
@@ -40,7 +43,7 @@ const EditDrivertModel = ({ driverId, onClose }) => {
 
                 setSelectedVehicles(assignedVehicles);
             } catch (err) {
-                alert('فشل في تحميل البيانات');
+                error("", "فشل في تحميل البيانات");
             }
         };
 
@@ -57,8 +60,9 @@ const EditDrivertModel = ({ driverId, onClose }) => {
         try {
             await driverAPI.update(driverId, form);
             onClose();
+            success("", "تم حفظ التعديلات بنجاح");
         } catch (err) {
-            alert('فشل في حفظ التعديلات: ' + err.message);
+            error("", "فشل في حفظ التعديلات");
         }
     };
 

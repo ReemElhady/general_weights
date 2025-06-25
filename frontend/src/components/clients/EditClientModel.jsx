@@ -2,8 +2,13 @@
 // EditClientModel.jsx
 import React, { useState, useEffect } from 'react';
 import { clientAPI } from '../../utils/client';
+import { useToast } from "../ui/toast";
+
 
 const EditClientModel = ({ clientId, onClose }) => {
+    const { success, error } = useToast();
+    
+
     const [form, setForm] = useState({
         name: '',
         manager: '',
@@ -26,7 +31,7 @@ const EditClientModel = ({ clientId, onClose }) => {
                     status: response.status || 'active',
                 });
             } catch (err) {
-                alert('فشل في تحميل بيانات العميل');
+                error("", "فشل في تحميل البيانات");
             }
         };
         fetchClient();
@@ -42,8 +47,9 @@ const EditClientModel = ({ clientId, onClose }) => {
         try {
             await clientAPI.update(clientId, form);
             onClose();
+            success("", "تم حفظ التعديلات بنجاح");
         } catch (err) {
-            alert(err.message);
+            error("", "فشل في حفظ التعديلات");
         }
     };
 

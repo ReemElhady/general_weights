@@ -1,37 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import { driverAPI } from '../../utils/driver';
 import { vehicleAPI } from '../../utils/vehicle';
 import { useToast } from "../ui/toast";
 
-const AddDriverModal = ({ onClose }) => {
-    const [vehicles, setVehicles] = useState([]);
-    const [selectedVehicles, setSelectedVehicles] = useState([]);
+const EditVehicleModel = ({ vehicleId, onClose }) => {
+    const [drivers, setDrivers] = useState([]);
+    const [selectedDrivers, setSelectedDrivers] = useState([]);
     const { success, error } = useToast();
 
     const [form, setForm] = useState({
-        name: '',
+        plate: '',
         license: '',
-        license_category: '',
-        license_expiry: '',
+        license_weight: '',
+        license_expiry: NaN,
+        chassis_number: '',
+        model: '',
+        type: '',
+        capacity: '',
+        last_inspection_date: NaN,
+        first_weight: '',
+        total_weight_operations: NaN,
         notes: '',
         status: 'active',
-        vehicle_ids: [],
+        driver_ids: [],
     });
 
     useEffect(() => {
-        const fetchVehicles = async () => {
+        const fetchData = async () => {
             try {
-                const data = await vehicleAPI.get({ page_size: 5000, ordering: 'id' });
-                const results = Array.isArray(data) ? data : data.results || [];
-                setVehicles(results);
+                const [vehicleData, driverData] = await Promise.all([
+                    vehicleAPI.getOne(vehicleId),
+                    driverAPI.get({ page_size: 5000 }),
+                ]);
+
+                const allDrivers = Array.isArray(driverData) ? driverData : driverData.results || [];
+                setDrivers(allDrivers);
+
+                const assignedDrivers = vehicleData.drivers || [];
+
+                setForm({
+                    plate: vehicleData.plate || '',
+                    license: vehicleData.license || '',
+                    license_expiry: vehicleData.license_expiry || '',
+                    license_weight: vehicleData.license_weight || '',
+                    chassis_number: vehicleData.chassis_number || '',
+                    model: vehicleData.model || '',
+                    type: vehicleData.type || '',
+                    capacity: vehicleData.capacity || '',
+                    last_inspection_date: vehicleData.last_inspection_date || '',
+                    first_weight: vehicleData.first_weight || '',
+                    total_weight_operations: vehicleData.total_weight_operations || '',
+                    notes: vehicleData.notes || '',
+                    status: vehicleData.status || 'active',
+                    driver_ids: assignedDrivers.map((d) => d.id),
+                });
+
+                setSelectedDrivers(assignedDrivers);
             } catch (err) {
-                error("", "فشل في تحميل السيارات");
+                error(err.message, "فشل في تحميل البيانات");
             }
         };
 
-        fetchVehicles();
-    }, []);
+        fetchData();
+    }, [vehicleId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,30 +72,27 @@ const AddDriverModal = ({ onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await driverAPI.create(form);
+            await driverAPI.update(vehicleId, form);
             onClose();
-            success("", "تم إضافة السائق بنجاح");
+            success("", "تم حفظ التعديلات بنجاح");
         } catch (err) {
-            error("", "فشل في حفظ السائق");
+            error(err.message, "فشل في حفظ التعديلات");
         }
     };
 
-    return ReactDOM.createPortal(
+    return (
         <div dir="rtl" className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="absolute inset-0" onClick={onClose} />
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="relative z-50 bg-white rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-xl"
+                className="relative z-50 bg-white rounded-xl w-full max-w-lg max-h-[90vh] shadow-xl"
             >
-                {/* Scrollable content */}
-                <div className="overflow-y-auto scrollbar-hide max-h-[calc(100vh-150px)] p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-semibold">إضافة سائق</h2>
-                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-lg font-bold">
-                            ×
-                        </button>
-                    </div>
+                <div className="flex items-center justify-between px-6 pt-6">
+                    <h2 className="text-lg font-semibold">تعديل بيانات السائق</h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-lg font-bold">×</button>
+                </div>
 
+                <div className="overflow-y-auto scrollbar-hide max-h-[calc(100vh-150px)] p-6">
                     <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex flex-col col-span-2">
                             <label className="mb-1">الاسم الكامل *</label>
@@ -145,45 +173,41 @@ const AddDriverModal = ({ onClose }) => {
                             </label>
                         </div>
 
-                        {/* Vehicle Selection */}
                         <div className="flex flex-col col-span-2">
                             <label className="mb-1">اختر السيارات</label>
                             <select
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring"
                                 onChange={(e) => {
                                     const selectedId = parseInt(e.target.value);
-                                    const selectedVehicle = vehicles.find((v) => v.id === selectedId);
-                                    if (selectedVehicle && !selectedVehicles.find((v) => v.id === selectedId)) {
-                                        setSelectedVehicles((prev) => [...prev, selectedVehicle]);
+                                    const selected = drivers.find((v) => v.id === selectedId);
+                                    if (selected && !form.vehicle_ids.includes(selected.id)) {
+                                        setSelectedDrivers((prev) => [...prev, selected]);
                                         setForm((prev) => ({
                                             ...prev,
-                                            vehicle_ids: [...prev.vehicle_ids, selectedId],
+                                            vehicle_ids: [...prev.vehicle_ids, selected.id],
                                         }));
                                     }
                                 }}
                                 defaultValue=""
                             >
                                 <option value="" disabled>اختر السيارة...</option>
-                                {vehicles.map((vehicle) => (
-                                    <option key={vehicle.id} value={vehicle.id}>
-                                        {vehicle.plate || `سيارة ${vehicle.id}`}
+                                {drivers.map((v) => (
+                                    <option key={v.id} value={v.id}>
+                                        {v.plate || `سيارة ${v.id}`}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
-                        {selectedVehicles.length > 0 && (
+                        {selectedDrivers.length > 0 && (
                             <div className="flex flex-wrap gap-2 col-span-2 mt-2">
-                                {selectedVehicles.map((v) => (
-                                    <div
-                                        key={v.id}
-                                        className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
-                                    >
-                                        <span>{v.plate || `سيارة ${v.id}`}</span>
+                                {selectedDrivers.map((v) => (
+                                    <div key={v.id} className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">
+                                        <span>{v.plate || `مركبة ${v.id}`}</span>
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setSelectedVehicles((prev) => prev.filter((x) => x.id !== v.id));
+                                                setSelectedDrivers((prev) => prev.filter((x) => x.id !== v.id));
                                                 setForm((prev) => ({
                                                     ...prev,
                                                     vehicle_ids: prev.vehicle_ids.filter((id) => id !== v.id),
@@ -197,22 +221,20 @@ const AddDriverModal = ({ onClose }) => {
                                 ))}
                             </div>
                         )}
+
+                        <div className="col-span-2 mt-4">
+                            <button
+                                type="submit"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 transition text-white py-2 rounded font-semibold"
+                            >
+                                حفظ التغييرات
+                            </button>
+                        </div>
                     </form>
                 </div>
-
-                {/* Fixed Submit Button */}
-                <div className="p-4 border-t mt-auto">
-                    <button
-                        onClick={handleSubmit}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 transition text-white py-2 rounded font-semibold"
-                    >
-                        إضافة السائق
-                    </button>
-                </div>
             </div>
-        </div>,
-        document.body
+        </div>
     );
 };
 
-export default AddDriverModal;
+export default EditVehicleModel;

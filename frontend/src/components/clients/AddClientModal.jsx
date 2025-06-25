@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { clientAPI } from '../../utils/client';
+import { useToast } from "../ui/toast";
 
 const AddClientModal = ({ onClose }) => {
+    const { success, error } = useToast();
+
     const [form, setForm] = useState({
         name: '',
         manager: '',
@@ -22,8 +25,9 @@ const AddClientModal = ({ onClose }) => {
         try {
             await clientAPI.create(form);
             onClose();
+            success("", "تم إضافة العميل بنجاح");
         } catch (err) {
-            alert(err.message);
+            error("", "فشل في تحميل العميل");
         }
     };
 

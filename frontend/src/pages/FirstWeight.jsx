@@ -1,9 +1,44 @@
-import React, { useState } from "react";
-import { ClipboardList, Truck, Scale } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ClipboardList, Truck, Scale, Pencil } from "lucide-react";
+import { ticketAPI } from "../utils/ticket"
+import { clientAPI } from "../utils/client";
+import { driverAPI } from "../utils/driver";
+import { vehicleAPI } from "../utils/vehicle";
+import { useNavigate } from "react-router-dom";
 
 const FirstWeight = () => {
+    const [vehicleList, setVehicleList] = useState([]);
+    const [vehicleSearch, setVehicleSearch] = useState("");
+    const [filteredVehicles, setFilteredVehicles] = useState([]);
+    const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+    const [driverList, setDriverList] = useState([]);
+    const [driverSearch, setDriverSearch] = useState("");
+    const [filteredDrivers, setFilteredDrivers] = useState([]);
+    const [selectedDriver, setSelectedDriver] = useState(null);
+
+    const [clientList, setClientList] = useState([]);
+    const [clientSearch, setClientSearch] = useState("");
+    const [filteredClients, setFilteredClients] = useState([]);
+    const [selectedClient, setSelectedClient] = useState(null);
+
+    const [scales, setScales] = useState([]);
+    const [selectedScale, setSelectedScale] = useState(null);
+
+    const [farmName, setFarmName] = useState("");
+    const [numberOfBoxes, setNumberOfBoxes] = useState("");
+    const [numberOfBirds, setNumberOfBirds] = useState("");
+    const [notes, setNotes] = useState("");
+
     const [step, setStep] = useState(1);
     const [ticketType, setTicketType] = useState("OUT");
+
+    const [showVehicleForm, setShowVehicleForm] = useState(false);
+    const [showDriverForm, setShowDriverForm] = useState(false);
+    const [showClientForm, setShowClientForm] = useState(false);
+
+    const [items, setItems] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const steps = [
         { label: "نوع امر النقل", icon: ClipboardList },
@@ -18,39 +53,136 @@ const FirstWeight = () => {
     const handleBack = () => {
         if (step > 1) setStep(step - 1);
     };
-    // Vehicle state
-    const [vehicleList, setVehicleList] = useState([
-        { id: 1, plate: "1234", license: "A1", model: "مرسيدس", type: "نقل" },
-        { id: 2, plate: "5678", license: "B2", model: "هيونداي", type: "مقطورة" },
-        { id: 3, plate: "91011", license: "A2", model: "مرسيدس", type: "نقل" },
-        { id: 4, plate: "52627", license: "B3", model: "هيونداي", type: "مقطورة" },
-        { id: 5, plate: "53442  ", license: "A3", model: "مرسيدس", type: "نقل" }
-    ]);
 
-    const [vehicleSearch, setVehicleSearch] = useState("");
-    const [selectedVehicle, setSelectedVehicle] = useState(null);
-    const [showVehicleForm, setShowVehicleForm] = useState(false);
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            fetchVehicles();
+        }, 500);
+        return () => clearTimeout(delayDebounce);
+    }, [vehicleSearch]);
 
-    // Driver state
-    const [driverList, setDriverList] = useState([
-        { id: 1, name: "أحمد علي", license: "8163253" },
-        { id: 2, name: "محمد سعيد", license: "8274610" }
-    ]);
-    const [selectedDriver, setSelectedDriver] = useState(null);
-    const [showDriverForm, setShowDriverForm] = useState(false);
+    const fetchVehicles = async () => {
+        try {
+            const data = await vehicleAPI.get({
+                search: vehicleSearch,
+                page_size: 10,
+            });
+            const list = Array.isArray(data) ? data : data.results || [];
+            setVehicleList(list);
+            setFilteredVehicles(list);
+        } catch (error) {
+            console.error("Error fetching vehicles:", error);
+        }
+    };
 
-    // Client state
-    const [clientList, setClientList] = useState([
-        { id: 1, name: "شركة الأمل", phone: "01012345678" },
-        { id: 2, name: "شركة النجاح", phone: "01198765432" }
-    ]);
-    const [selectedClient, setSelectedClient] = useState(null);
-    const [showClientForm, setShowClientForm] = useState(false);
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            fetchDrivers();
+        }, 500);
+        return () => clearTimeout(delayDebounce);
+    }, [driverSearch]);
 
-    const filteredVehicles = vehicleList.filter(v =>
-        v.plate.toLowerCase().includes(vehicleSearch.toLowerCase()) ||
-        v.model.toLowerCase().includes(vehicleSearch.toLowerCase())
-    );
+    const fetchDrivers = async () => {
+        try {
+            const data = await driverAPI.get({
+                search: driverSearch,
+                page_size: 10,
+            });
+            const list = Array.isArray(data) ? data : data.results || [];
+            setDriverList(list);
+            setFilteredDrivers(list);
+        } catch (error) {
+            console.error("Error fetching drivers:", error);
+        }
+    };
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            fetchClients();
+        }, 500);
+        return () => clearTimeout(delayDebounce);
+    }, [clientSearch]);
+
+    const fetchClients = async () => {
+        try {
+            const data = await clientAPI.get({
+                search: clientSearch,
+                page_size: 10,
+            });
+            const list = Array.isArray(data) ? data : data.results || [];
+            setClientList(list);
+            setFilteredClients(list);
+        } catch (error) {
+            console.error("Error fetching clients:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchScales();
+    }, []);
+
+    const fetchScales = async () => {
+        try {
+            const data = await ticketAPI.getScales();
+            const list = Array.isArray(data) ? data : data.results || [];
+            setScales(list);
+        } catch (error) {
+            console.error("Error fetching scales:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchItems();
+    }, []);
+
+    const fetchItems = async () => {
+        try {
+            const data = await ticketAPI.getItems();
+            const list = Array.isArray(data) ? data : data.results || [];
+            setItems(list);
+        } catch (error) {
+            console.error("Error fetching items:", error);
+        }
+    };
+    const navigate = useNavigate();
+
+    const handleSaveTicket = async () => {
+        try {
+            const payload = {
+                scale: selectedScale,
+                vehicle: selectedVehicle?.id,
+                driver: selectedDriver?.id,
+                customer: selectedClient?.id,
+                ticket_type: ticketType,
+                first_weight: 1200, // Replace 0 with actual weight reading from the scale hardware
+                first_weight_date: new Date().toISOString(),
+                item: selectedItem,
+                farm: farmName,
+                boxes_number: numberOfBoxes,
+                birds_number: numberOfBirds,
+                notes: notes,
+            };
+
+            console.log("Submitting Ticket:", payload);
+
+            const response = await ticketAPI.create(payload);
+            console.log("Ticket Created:", response);
+            alert("تم حفظ التذكرة بنجاح ✅");
+            navigate("/tickets");
+
+        } catch (error) {
+            console.error("Error saving ticket:", error);
+
+            // If backend returned weight manipulation block (403)
+            if (error.message.includes("Weight manipulation detected")) {
+                alert("🚨 تم حظر المركبة بسبب التلاعب في الوزن");
+                navigate("/blocked-vehicles");
+            } else {
+                alert(`❌ خطأ أثناء الحفظ: ${error.message}`);
+            }
+        }
+    };
+
 
     return (
         <div className="p-8 space-y-8">
@@ -64,15 +196,13 @@ const FirstWeight = () => {
 
                     return (
                         <React.Fragment key={index}>
-                            {/* Step bubble */}
                             <div className="flex flex-col items-center gap-2 w-32">
                                 <div
                                     className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-300 ${isActive ? "border-indigo-500 bg-white" : "border-gray-300 bg-gray-100"
                                         }`}
                                 >
                                     <Icon
-                                        className={`w-5 h-5 ${isActive ? "text-indigo-500" : "text-gray-400"
-                                            }`}
+                                        className={`w-5 h-5 ${isActive ? "text-indigo-500" : "text-gray-400"}`}
                                     />
                                 </div>
                                 <div className="flex flex-col text-center text-xs">
@@ -83,15 +213,13 @@ const FirstWeight = () => {
                                         الخطوة {stepNumber}
                                     </span>
                                     <span
-                                        className={`font-semibold ${isCurrent ? "text-indigo-500" : "text-gray-500"
+                                        className={`font-semibold ${isActive ? "text-indigo-500" : "text-gray-500"
                                             }`}
                                     >
                                         {stepItem.label}
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Connector line */}
                             {index < steps.length - 1 && (
                                 <div
                                     className={`h-[2px] w-10 transition-all duration-300 ${step > stepNumber ? "bg-indigo-500" : "bg-gray-300"
@@ -102,7 +230,6 @@ const FirstWeight = () => {
                     );
                 })}
             </div>
-
             {/* Step Content */}
             <div className="mt-6">
                 {step === 1 && (
@@ -207,13 +334,26 @@ const FirstWeight = () => {
                                     type="text"
                                     placeholder="ابحث حسب الاسم أو الرخصة..."
                                     className="w-full px-4 py-2 border rounded"
-                                    onChange={(e) => {
-                                        const filtered = driverList.filter(d =>
-                                            d.name.includes(e.target.value) || d.license.includes(e.target.value)
-                                        );
-                                        setDriverList(filtered);
-                                    }}
+                                    value={driverSearch}
+                                    onChange={(e) => setDriverSearch(e.target.value)}
                                 />
+                                {filteredDrivers.length > 0 && (
+                                    <ul className="bg-white border rounded mt-2 max-h-32 overflow-y-auto">
+                                        {filteredDrivers.map(driver => (
+                                            <li
+                                                key={driver.id}
+                                                onClick={() => {
+                                                    setSelectedDriver(driver);
+                                                    setDriverSearch(driver.name);
+                                                }}
+                                                className="px-4 py-2 hover:bg-indigo-100 cursor-pointer text-right"
+                                            >
+                                                {driver.name} - {driver.license}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
                                 {selectedDriver && (
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -243,13 +383,26 @@ const FirstWeight = () => {
                                     type="text"
                                     placeholder="ابحث باسم العميل أو الشخص المسؤول..."
                                     className="w-full px-4 py-2 border rounded"
-                                    onChange={(e) => {
-                                        const filtered = clientList.filter(c =>
-                                            c.name.includes(e.target.value) || c.phone.includes(e.target.value)
-                                        );
-                                        setClientList(filtered);
-                                    }}
+                                    value={clientSearch}
+                                    onChange={(e) => setClientSearch(e.target.value)}
                                 />
+                                {filteredClients.length > 0 && (
+                                    <ul className="bg-white border rounded mt-2 max-h-32 overflow-y-auto">
+                                        {filteredClients.map(client => (
+                                            <li
+                                                key={client.id}
+                                                onClick={() => {
+                                                    setSelectedClient(client);
+                                                    setClientSearch(client.name);
+                                                }}
+                                                className="px-4 py-2 hover:bg-indigo-100 cursor-pointer text-right"
+                                            >
+                                                {client.name} - {client.phone}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
                                 {selectedClient && (
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -263,6 +416,24 @@ const FirstWeight = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* --- Items SECTION --- */}
+                            <div className="col-span-2 bg-[#f8f9fd] p-6 rounded-xl space-y-4">
+                                <h4 className="font-semibold text-right">نوع الحمولة (Item)</h4>
+                                <select
+                                    className="w-full px-4 py-2 border rounded text-right"
+                                    value={selectedItem || ""}
+                                    onChange={(e) => setSelectedItem(e.target.value)}
+                                >
+                                    <option value="">اختر نوع الحمولة</option>
+                                    {items.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.name} - {item.sector} - {item.type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                         </div>
 
                         {/* Navigation Buttons */}
@@ -272,39 +443,184 @@ const FirstWeight = () => {
                         </div>
                     </div>
                 )}
-
-
                 {step === 3 && (
-                    <div className="grid grid-cols-2 gap-8 [direction:rtl]">
-                        {/* Weight Display */}
-                        <div className="text-center space-y-6">
-                            <div className="text-9xl font-bold text-indigo-500">0</div>
-                            <p className="text-sm text-gray-400">قراءة الميزان الحالية</p>
-                            <input
-                                type="text"
-                                placeholder="ملاحظات"
-                                className="mt-4 px-4 py-2 w-2/3 border rounded"
-                            />
-                            <button className="mt-4 px-8 py-3 rounded bg-indigo-500 text-white">حفظ الوزن الثاني</button>
+                    <>
+                        <div className="grid grid-cols-2 gap-6 [direction:rtl]">
+                            {/* RIGHT SIDE: Info Boxes */}
+                            <div className="space-y-4">
+                                {/* VEHICLE INFO */}
+                                {selectedVehicle && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <button
+                                            className="absolute left-4 top-4 text-gray-400 hover:text-indigo-500"
+                                            onClick={() => setStep(2)}
+                                            title="تعديل"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <h4 className="font-bold mb-2">بيانات المركبة</h4>
+                                        <p>رقم اللوحة: {selectedVehicle.plate}</p>
+                                        <p>نوع السيارة: {selectedVehicle.type}</p>
+                                        <p>الماركة: {selectedVehicle.model}</p>
+                                        <p>الرخصة: {selectedVehicle.license}</p>
+                                    </div>
+                                )}
+
+                                {/* DRIVER INFO */}
+                                {selectedDriver && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <button
+                                            className="absolute left-4 top-4 text-gray-400 hover:text-indigo-500"
+                                            onClick={() => setStep(2)}
+                                            title="تعديل"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <h4 className="font-bold mb-2">بيانات السائق</h4>
+                                        <p>الاسم: {selectedDriver.name}</p>
+                                        <p>رخصة القيادة: A / {selectedDriver.license}</p>
+                                        <p>تاريخ الإصدار: 16.01.2021</p>
+                                        <p>تاريخ الانتهاء: 16.01.2021</p>
+                                    </div>
+                                )}
+
+                                {/* CLIENT INFO */}
+                                {selectedClient && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <button
+                                            className="absolute left-4 top-4 text-gray-400 hover:text-indigo-500"
+                                            onClick={() => setStep(2)}
+                                            title="تعديل"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <h4 className="font-bold mb-2">بيانات العميل و الحمولة</h4>
+                                        <p>اسم العميل: {selectedClient.name}</p>
+                                        <p>رقم الهاتف: {selectedClient.phone}</p>
+                                        <p>نوع الحمولة: الدواجن الحرة</p>
+                                        <p>عدد الأقفاص: 120</p>
+                                        <p>عدد الطيور: 2000</p>
+                                    </div>
+                                )}
+
+                                {/* ITEM INFO */}
+                                {selectedItem && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <button
+                                            className="absolute left-4 top-4 text-gray-400 hover:text-indigo-500"
+                                            onClick={() => setStep(2)}
+                                            title="تعديل"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <h4 className="font-bold mb-2">معلومات الحمولة</h4>
+                                        <p>
+                                            <span className="font-semibold">الاسم:</span>{" "}
+                                            {items.find((item) => item.id == selectedItem)?.name}
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">القطاع:</span>{" "}
+                                            {items.find((item) => item.id == selectedItem)?.sector}
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">النوع:</span>{" "}
+                                            {items.find((item) => item.id == selectedItem)?.type}
+                                        </p>
+                                    </div>
+                                )}
+
+                            </div>
+
+                            {/* LEFT SIDE: Weight + Extra Fields */}
+                            <div className="flex flex-col bg-gray-100 p-6 rounded-xl space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-500">قراءة الميزان الحالية</span>
+                                    <Scale className="w-5 h-5 text-indigo-500" />
+                                </div>
+
+                                <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
+                                    0
+                                </div>
+                                <span className="block text-sm text-gray-600 text-left mt-2">KG</span>
+
+                                {/* Scale Dropdown */}
+                                <div>
+                                    <label className="block mb-1 text-sm">اختر الميزان</label>
+                                    <select
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        value={selectedScale || ""}
+                                        onChange={(e) => setSelectedScale(e.target.value)}
+                                    >
+                                        <option value="">اختر الميزان</option>
+                                        {scales.map((scale) => (
+                                            <option key={scale.id} value={scale.id}>
+                                                {scale.name} - {scale.location}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Farm Fields */}
+                                <div>
+                                    <label className="block mb-1 text-sm">اسم المزرعة</label>
+                                    <input
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        value={farmName}
+                                        onChange={(e) => setFarmName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block mb-1 text-sm">عدد الأقفاص</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-2 border rounded text-right"
+                                            value={numberOfBoxes}
+                                            onChange={(e) => setNumberOfBoxes(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1 text-sm">عدد الطيور</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-2 border rounded text-right"
+                                            value={numberOfBirds}
+                                            onChange={(e) => setNumberOfBirds(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm">ملاحظات</label>
+                                    <textarea
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        rows="2"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Side Info Panel */}
-                        <div className="bg-gray-100 p-4 rounded-lg space-y-6">
-                            <div>
-                                <h4 className="font-bold mb-2">بيانات المركبة</h4>
-                                <p>نوع السيارة: نقل فردي</p>
-                                <p>الماركة: مرسيدس</p>
-                                <p>الوزن في الرخصة: 12000 كج</p>
-                                <p>سعة القيد: 14000 كج</p>
-                            </div>
-                            <div>
-                                <h4 className="font-bold mb-2">بيانات السائق</h4>
-                                <p>الاسم: احمد السيد علي محمد</p>
-                                <p>رخصة القيادة: A / 8163253</p>
-                                <p>تاريخ الإصدار: 16.01.2021</p>
-                            </div>
+                        {/*  Buttons */}
+                        <div className="col-span-2 flex justify-center gap-4 mt-8">
+                            <button
+                                className="py-2 px-4 border rounded text-gray-500 hover:bg-gray-200"
+                                onClick={handleBack}
+                            >
+                                السابق
+                            </button>
+                            <button className="py-2 px-4 border rounded text-gray-600 hover:bg-gray-200">
+                                🖨️ طباعة
+                            </button>
+                            <button className="py-2 px-6 bg-indigo-500 text-white font-bold rounded-lg"
+                                onClick={handleSaveTicket}>
+
+                                حفظ التذكرة
+                            </button>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>

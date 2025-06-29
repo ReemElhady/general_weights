@@ -93,7 +93,7 @@ export const ticketAPI = {
 
     update: async (id, payload) => {
         const response = await fetch(`${BASE_URL}/tickets/${id}/second-weight/`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: authHeadersJSON(),
             body: JSON.stringify(payload),
         });

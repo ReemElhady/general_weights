@@ -127,6 +127,11 @@ class BlockedVehiclesListAPIView(APIView):
             is_blocked=True
         )
 
+        unblocked_count = BlockedVehicle.objects.filter(
+            status="unblocked",
+            is_blocked=False
+        ).count()
+
 
         result = apply_search_order_pagination(
             queryset=queryset,
@@ -138,7 +143,8 @@ class BlockedVehiclesListAPIView(APIView):
         serializer = BlockedVehicleSerializer(result['results'], many=True)
 
         return Response({
-            'count': result['count'],
+            'blocked_count': result['count'],
+            'unblocked_count': unblocked_count,
             'total_pages': result['total_pages'],
             'current_page': result['current_page'],
             'results': serializer.data

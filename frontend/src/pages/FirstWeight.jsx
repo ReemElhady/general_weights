@@ -4,6 +4,7 @@ import { ticketAPI } from "../utils/ticket"
 import { clientAPI } from "../utils/client";
 import { driverAPI } from "../utils/driver";
 import { vehicleAPI } from "../utils/vehicle";
+import LiveWeightPage from "./LiveWeightPage";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const FirstWeight = () => {
@@ -152,22 +153,47 @@ const FirstWeight = () => {
     };
 
 
+
+    const [liveWeight, setLiveWeight] = useState(null);
+
+useEffect(() => {
+  if (!selectedScale) return;
+
+  const socket = new WebSocket("ws://localhost:8000/ws/scale/");
+
+  socket.onopen = () => {
+    socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.weight) {
+      const cleanWeight = data.weight.replace(/#/g, "").trim();
+      setLiveWeight(cleanWeight);
+    }
+  };
+
+  return () => socket.close();
+}, [selectedScale]);
+
+
     const handleSaveTicket = async () => {
         try {
             const payload = {
-                scale: selectedScale,
-                vehicle: selectedVehicle?.id,
-                driver: selectedDriver?.id,
-                customer: selectedClient?.id,
-                ticket_type: ticketType,
-                first_weight: 0, // Replace 0 with actual weight reading from the scale hardware
-                first_weight_date: new Date().toISOString(),
-                item: selectedItem,
-                farm: farmName,
-                boxes_number: numberOfBoxes,
-                birds_number: numberOfBirds,
-                notes: notes,
+            scale: selectedScale,
+            vehicle: selectedVehicle?.id,
+            driver: selectedDriver?.id,
+            customer: selectedClient?.id,
+            ticket_type: ticketType,
+            first_weight: parseFloat(liveWeight),   
+            first_weight_date: new Date().toISOString(),
+            item: selectedItem,
+            farm: farmName,
+            boxes_number: numberOfBoxes,
+            birds_number: numberOfBirds,
+            notes: notes,
             };
+
 
             console.log("Submitting Ticket:", payload);
 
@@ -217,7 +243,7 @@ const FirstWeight = () => {
     };
     const handleSaveSecondWeight = async () => {
         try {
-            await ticketAPI.update(ticketId, { second_weight: parseFloat(secondWeightInput) });
+            await ticketAPI.update(ticketId, { second_weight: parseFloat(liveWeight) });
             alert("✅ تم حفظ الوزن الثاني بنجاح");
             navigate("/tickets");
         } catch (error) {
@@ -579,14 +605,11 @@ const FirstWeight = () => {
                                 </div>
 
                                 <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
-                                    0
+                                {liveWeight !== null ? `${liveWeight} كجم` : "—"}
                                 </div>
-                                <span className="block text-sm text-gray-600 text-left mt-2">KG</span>
-                                <button
-                                    className="mt-2 py-2 w-full bg-indigo-500 text-white rounded"
-                                >
-                                    قراءة الوزن الحالي
-                                </button>
+
+                                <span className="block text-sm text-gray-600 text-left mt-2"></span>
+
                                 {/* Scale Dropdown */}
                                 <div>
                                     <label className="block mb-1 text-sm">اختر الميزان</label>
@@ -598,7 +621,7 @@ const FirstWeight = () => {
                                         <option value="">اختر الميزان</option>
                                         {scales.map((scale) => (
                                             <option key={scale.id} value={scale.id}>
-                                                {scale.name} - {scale.location}
+                                                {scale.name}
                                             </option>
                                         ))}
                                     </select>
@@ -727,9 +750,9 @@ const FirstWeight = () => {
                                 </div>
 
                                 <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
-                                    {secondWeightInput || 0}
+                                    {liveWeight !== null ? `${liveWeight} كجم` : "—"}
                                 </div>
-                                <span className="block text-sm text-gray-600 text-left mt-2">KG</span>
+                                <span className="block text-sm text-gray-600 text-left mt-2"></span>
 
                                 {/* Scale Selector */}
                                 <div>

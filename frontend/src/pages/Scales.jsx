@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import AddScaleModal from "./AddScaleModal";
-import EditScalePage from "./EditScalePage";
+import AddScaleModal from "../components/scales/AddScaleModal";
+import EditScalePage from "../components/scales/EditScalePage";
+import { ChevronUp, ChevronDown } from "lucide-react";
+
+const DEFAULT_PAGE_SIZE = parseInt(import.meta.env.VITE_DEFAULT_PAGE_SIZE || "10", 10);
 
 const Scales = () => {
   const [showModal, setShowModal] = useState(false);
@@ -9,17 +12,30 @@ const Scales = () => {
   const [selectedAll, setSelectedAll] = useState(false);
   const [selectedScales, setSelectedScales] = useState([]);
   const [editingScaleId, setEditingScaleId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+  const [ordering, setOrdering] = useState("-id");
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const menuRef = useRef(null);
+  const headerMenuRef = useRef(null);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      fetchScales();
+    }, 500);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm, pagination.page, ordering, pageSize]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        event.target.closest(".menu-button") ||
-        event.target.closest(".menu-dropdown")
-      ) {
-        return;
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setScales((prev) => prev.map((s) => ({ ...s, showMenu: false })));
       }
-      setScales((prev) => prev.map((s) => ({ ...s, showMenu: false })));
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target)) {
+        setHeaderMenuOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -28,29 +44,45 @@ const Scales = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetchScales();
-  }, []);
-
   const fetchScales = () => {
-    fetch("http://localhost:8000/api/v1/business/scales/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
+    fetch(
+      `http://localhost:8000/api/v1/business/scales/?search=${searchTerm}&page=${pagination.page}&ordering=${ordering}&page_size=${pageSize}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
-        const results = (Array.isArray(data) ? data : data.results || []).map(
-          (s) => ({
-            ...s,
-            showMenu: false,
-          })
+        const results = (Array.isArray(data.results) ? data.results : []).map(
+          (s) => ({ ...s, showMenu: false })
         );
         setScales(results);
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: data.total_pages || 1,
+        }));
       })
       .catch((error) => {
         console.error("Fetch error:", error);
       });
+  };
+
+  const toggleOrdering = (field) => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    setOrdering((prev) => (prev === field ? `-${field}` : field));
+  };
+
+  const renderArrows = (field) => {
+    const isAsc = ordering === field;
+    const isDesc = ordering === `-${field}`;
+    return (
+      <span className="inline-flex flex-col ml-1">
+        <ChevronUp className={`w-3 h-3 ${isAsc ? "text-gray-800" : "text-gray-400"}`} />
+        <ChevronDown className={`w-3 h-3 ${isDesc ? "text-gray-800" : "text-gray-400"}`} />
+      </span>
+    );
   };
 
   const toggleSelectAll = () => {
@@ -100,48 +132,35 @@ const Scales = () => {
     }
   };
 
+  const handlePageChange = (direction) => {
+    setPagination((prev) => {
+      const newPage = direction === "next" ? prev.page + 1 : prev.page - 1;
+      if (newPage < 1 || newPage > prev.totalPages) return prev;
+      return { ...prev, page: newPage };
+    });
+  };
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-start">
+    <div className="p-6 space-y-6" ref={menuRef} >
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <button
           onClick={() => setShowModal(true)}
           className="border border-[#5F4DEE] text-[#5F4DEE] px-4 py-2 rounded-lg hover:bg-[#5F4DEE] hover:text-white transition-colors"
         >
           + إضافة ميزان
         </button>
+        <input
+          type="text"
+          placeholder="...البحث عن الموازين"
+          className="border border-gray-300 rounded-lg px-4 py-2 w-64"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPagination((prev) => ({ ...prev, page: 1 }));
+          }}
+        />
       </div>
 
-      <div className="flex flex-wrap gap-4 justify-end items-center">
-        <div className="flex items-center gap-2 order-1">
-          <input
-            type="text"
-            placeholder="...البحث عن الموازين"
-            className="border border-gray-300 rounded-lg px-4 py-2 w-64"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 order-2">
-          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-1">
-            <span>التصفية</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V20a1 1 0 01-1.447.894l-4-2A1 1 0 019 18v-4.586L3.293 6.707A1 1 0 013 6V4z"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto bg-white rounded-lg shadow min-h-[70vh]">
+      <div className="overflow-x-auto bg-white rounded-lg shadow min-h-[37vh]" ref={headerMenuRef}>
         <table className="min-w-full text-right" dir="rtl">
           <thead className="bg-gray-100 text-sm text-gray-700">
             <tr>
@@ -152,18 +171,75 @@ const Scales = () => {
                   onChange={toggleSelectAll}
                 />
               </th>
-              <th className="py-3 px-4">اسم الميزان</th>
-              <th className="py-3 px-4">الشركة المصنعة</th>
-              <th className="py-3 px-4">الموديل</th>
+              <th className="py-3 px-4 cursor-pointer" onClick={() => toggleOrdering("name")}>
+                <div className="flex items-center">
+                  اسم الميزان {renderArrows("name")}
+                </div>
+              </th>
+              <th className="py-3 px-4 cursor-pointer" onClick={() => toggleOrdering("manufacturer")}>الشركة المصنعة {renderArrows("manufacturer")}</th>
+              <th className="py-3 px-4 cursor-pointer" onClick={() => toggleOrdering("model")}>الموديل {renderArrows("model")}</th>
               <th className="py-3 px-4">نوع الاتصال</th>
               <th className="py-3 px-4">عنوان الوصول</th>
               <th className="py-3 px-4">البورت</th>
-              <th className="py-3 px-4">المنفذ التسلسلي</th>
-              <th className="py-3 px-4">Baudrate</th>
-              <th className="py-3 px-4">Delay</th>
-              <th className="py-3 px-4">عدد البتات</th>
               <th className="py-3 px-4">الحالة</th>
-              <th className="py-3 px-4"></th>
+              <th className="py-3 px-4 relative">
+                <button onClick={() => setHeaderMenuOpen(!headerMenuOpen)}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-gray-600 hover:text-black"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
+                  </svg>
+                </button>
+                {headerMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-40 bg-white border rounded shadow z-20 text-sm">
+                    <div className="px-4 py-2 text-gray-700 border-b">عدد العناصر:</div>
+                    <select
+                      className="w-full px-4 py-2 border-b text-right"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(parseInt(e.target.value));
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                        setHeaderMenuOpen(false);
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <button
+                      className={`w-full px-4 py-2 text-red-600 hover:bg-red-100 text-right ${
+                        selectedScales.length === 0 && "cursor-not-allowed opacity-50"
+                      }`}
+                      disabled={selectedScales.length === 0}
+                      onClick={() => {
+                        if (window.confirm("هل أنت متأكد من حذف العناصر المحددة؟")) {
+                          Promise.all(
+                            selectedScales.map((id) =>
+                              fetch(`http://localhost:8000/api/v1/business/scales/${id}/`, {
+                                method: "DELETE",
+                                headers: {
+                                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                                },
+                              })
+                            )
+                          ).then(() => {
+                            fetchScales();
+                            setSelectedScales([]);
+                            setSelectedAll(false);
+                            setHeaderMenuOpen(false);
+                          });
+                        }
+                      }}
+                    >
+                      حذف المحدد
+                    </button>
+                  </div>
+                )}
+              </th>
             </tr>
           </thead>
           <tbody className="text-sm">
@@ -182,10 +258,6 @@ const Scales = () => {
                 <td className="py-2 px-4">{scale.connection_type}</td>
                 <td className="py-2 px-4">{scale.ip}</td>
                 <td className="py-2 px-4">{scale.port}</td>
-                <td className="py-2 px-4">{scale.serial_port}</td>
-                <td className="py-2 px-4">{scale.baudrate}</td>
-                <td className="py-2 px-4">{scale.delay}</td>
-                <td className="py-2 px-4">{scale.bits_number}</td>
                 <td className="py-2 px-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${
@@ -224,7 +296,6 @@ const Scales = () => {
                         >
                           تعديل
                         </button>
-
                         <button
                           className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-right"
                           onClick={() => {
@@ -234,7 +305,6 @@ const Scales = () => {
                         >
                           الوزن المباشر
                         </button>
-
                         <button
                           className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-right"
                           onClick={() => handleDelete(scale.id)}
@@ -250,30 +320,47 @@ const Scales = () => {
           </tbody>
         </table>
 
+        {/* Pagination */}
         <div className="flex justify-between items-center p-4 text-sm text-gray-600">
-          <span>1-20 of {scales.length}</span>
+          <span>
+            الصفحة {pagination.page} من {pagination.totalPages}
+          </span>
           <div className="flex items-center gap-2">
-            <button className="p-1 border rounded">&lt;</button>
-            <span>1/1</span>
-            <button className="p-1 border rounded">&gt;</button>
+            <button
+              onClick={() => handlePageChange("prev")}
+              className="p-1 border rounded"
+              disabled={pagination.page === 1}
+            >
+              &lt;
+            </button>
+            <span>{pagination.page}</span>
+            <button
+              onClick={() => handlePageChange("next")}
+              className="p-1 border rounded"
+              disabled={pagination.page === pagination.totalPages}
+            >
+              &gt;
+            </button>
           </div>
         </div>
       </div>
 
       {editingScaleId && (
-        <div>
-          <button
-            className="absolute top-2 left-2 text-red-600 font-bold"
-            onClick={() => setEditingScaleId(null)}
-          ></button>
-          <EditScalePage
-            scaleId={editingScaleId}
-            onClose={() => setEditingScaleId(null)}
-          />
-        </div>
+        <EditScalePage
+          scaleId={editingScaleId}
+          onClose={() => setEditingScaleId(null)}
+        />
       )}
 
-      {showModal && <AddScaleModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <AddScaleModal
+          onClose={() => setShowModal(false)}
+          onScaleAdded={(newScale) => {
+            setScales((prev) => [...prev, newScale]);
+            setShowModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

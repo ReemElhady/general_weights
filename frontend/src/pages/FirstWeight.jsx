@@ -27,6 +27,7 @@ const FirstWeight = () => {
     const [selectedScale, setSelectedScale] = useState(null);
 
     const [farmName, setFarmName] = useState("");
+    const [firstWeightValue, setFirstWeightValue] = useState("");
     const [numberOfBoxes, setNumberOfBoxes] = useState("");
     const [numberOfBirds, setNumberOfBirds] = useState("");
     const [notes, setNotes] = useState("");
@@ -156,42 +157,42 @@ const FirstWeight = () => {
 
     const [liveWeight, setLiveWeight] = useState(null);
 
-useEffect(() => {
-  if (!selectedScale) return;
+    useEffect(() => {
+        if (!selectedScale) return;
 
-  const socket = new WebSocket("ws://localhost:8000/ws/scale/");
+        const socket = new WebSocket("ws://localhost:8000/ws/scale/");
 
-  socket.onopen = () => {
-    socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));
-  };
+        socket.onopen = () => {
+            socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));
+        };
 
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.weight) {
-      const cleanWeight = data.weight.replace(/#/g, "").trim();
-      setLiveWeight(cleanWeight);
-    }
-  };
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.weight) {
+                const cleanWeight = data.weight.replace(/#/g, "").trim();
+                setLiveWeight(cleanWeight);
+            }
+        };
 
-  return () => socket.close();
-}, [selectedScale]);
+        return () => socket.close();
+    }, [selectedScale]);
 
 
     const handleSaveTicket = async () => {
         try {
             const payload = {
-            scale: selectedScale,
-            vehicle: selectedVehicle?.id,
-            driver: selectedDriver?.id,
-            customer: selectedClient?.id,
-            ticket_type: ticketType,
-            first_weight: parseFloat(liveWeight),   
-            first_weight_date: new Date().toISOString(),
-            item: selectedItem,
-            farm: farmName,
-            boxes_number: numberOfBoxes,
-            birds_number: numberOfBirds,
-            notes: notes,
+                scale: selectedScale,
+                vehicle: selectedVehicle?.id,
+                driver: selectedDriver?.id,
+                customer: selectedClient?.id,
+                ticket_type: ticketType,
+                first_weight: parseFloat(liveWeight),
+                first_weight_date: new Date().toISOString(),
+                item: selectedItem,
+                farm: farmName,
+                boxes_number: numberOfBoxes,
+                birds_number: numberOfBirds,
+                notes: notes,
             };
 
 
@@ -234,6 +235,7 @@ useEffect(() => {
             setSelectedClient(ticket.customer);
             setSelectedItem(ticket.item);
             setFarmName(ticket.farm);
+            setFirstWeightValue(ticket.first_weight);
             setNumberOfBoxes(ticket.boxes_number);
             setNumberOfBirds(ticket.birds_number);
             setNotes(ticket.notes);
@@ -326,7 +328,7 @@ useEffect(() => {
                 )}
                 {step === 2 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-right">بيانات المركبة والحمولة</h3>
+                        <h3 className="text-lg font-bold text-right">بيانات المركبة </h3>
                         <div className="grid grid-cols-2 gap-6 [direction:rtl]">
 
                             {/* --- VEHICLE SECTION --- */}
@@ -437,7 +439,7 @@ useEffect(() => {
                             {/* --- CUSTOMER SECTION --- */}
                             <div className="col-span-2 bg-[#f8f9fd] p-6 rounded-xl space-y-4">
                                 <div className="flex justify-between items-center">
-                                    <h4 className="font-semibold text-right">بيانات العميل / الحمولة</h4>
+                                    <h4 className="font-semibold text-right">بيانات العميل</h4>
                                     <button
                                         className="text-indigo-500 font-bold text-sm"
                                         onClick={() => setShowClientForm(true)}
@@ -485,7 +487,7 @@ useEffect(() => {
 
                             {/* --- Items SECTION --- */}
                             <div className="col-span-2 bg-[#f8f9fd] p-6 rounded-xl space-y-4">
-                                <h4 className="font-semibold text-right">نوع الحمولة (Item)</h4>
+                                <h4 className="font-semibold text-right">نوع الحمولة</h4>
                                 <select
                                     className="w-full px-4 py-2 border rounded text-right"
                                     value={selectedItem || ""}
@@ -605,11 +607,14 @@ useEffect(() => {
                                 </div>
 
                                 <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
-                                {liveWeight !== null ? `${liveWeight} كجم` : "—"}
+                                    {liveWeight !== null ? `${liveWeight} كجم` : "—"}
                                 </div>
-
-                                <span className="block text-sm text-gray-600 text-left mt-2"></span>
-
+                                <span className="block text-sm text-gray-600 text-left mt-2">KG</span>
+                                {/* <button
+                                    className="mt-2 py-2 w-full bg-indigo-500 text-white rounded"
+                                >
+                                    قراءة الوزن الحالي
+                                </button> */}
                                 {/* Scale Dropdown */}
                                 <div>
                                     <label className="block mb-1 text-sm">اختر الميزان</label>
@@ -694,6 +699,13 @@ useEffect(() => {
                         <div className="grid grid-cols-2 gap-6 [direction:rtl]">
                             {/* RIGHT SIDE: Ticket Info */}
                             <div className="space-y-4">
+                                <div className="bg-gray-100 p-4 rounded-lg space-y-2 relative">
+                                    <label className="block mb-2 text-xl font-bold text-gray-700">الوزن الأول</label>
+                                    <div className="w-full px-4 py-3 rounded bg-white text-left text-2xl font-semibold text-gray-900">
+                                        {firstWeightValue || "—"}
+                                    </div>
+                                </div>
+
                                 {/* VEHICLE INFO */}
                                 {selectedVehicle && (
                                     <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
@@ -756,6 +768,11 @@ useEffect(() => {
 
                                 {/* Scale Selector */}
                                 <div>
+                                    {/* <button
+                                        className="mt-2 py-2 w-full bg-indigo-500 text-white rounded"
+                                    >
+                                        قراءة الوزن الحالي
+                                    </button> */}
                                     <label className="block mb-1 text-sm">اختر الميزان</label>
                                     <select
                                         className="w-full px-4 py-2 border rounded text-right"
@@ -769,11 +786,6 @@ useEffect(() => {
                                             </option>
                                         ))}
                                     </select>
-                                    <button
-                                        className="mt-2 py-2 w-full bg-indigo-500 text-white rounded"
-                                    >
-                                        قراءة الوزن الحالي
-                                    </button>
                                 </div>
 
                                 {/* Farm Fields */}
@@ -785,6 +797,7 @@ useEffect(() => {
                                         onChange={(e) => setFarmName(e.target.value)}
                                     />
                                 </div>
+
 
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>

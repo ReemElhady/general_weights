@@ -4,8 +4,8 @@ import { ticketAPI } from "../utils/ticket"
 import { clientAPI } from "../utils/client";
 import { driverAPI } from "../utils/driver";
 import { vehicleAPI } from "../utils/vehicle";
-import { useNavigate } from "react-router-dom";
 import LiveWeightPage from "./LiveWeightPage";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const FirstWeight = () => {
     const [vehicleList, setVehicleList] = useState([]);
@@ -40,11 +40,17 @@ const FirstWeight = () => {
 
     const [items, setItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [ticketId, setTicketId] = useState(null);
+    const [secondWeightInput, setSecondWeightInput] = useState("");
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const steps = [
         { label: "نوع امر النقل", icon: ClipboardList },
         { label: "بيانات المركبة والحمولة", icon: Truck },
         { label: "قياس الوزن الاول", icon: Scale },
+        { label: "قياس الوزن الثاني", icon: Scale },
     ];
 
     const handleNext = () => {
@@ -145,7 +151,7 @@ const FirstWeight = () => {
             console.error("Error fetching items:", error);
         }
     };
-    const navigate = useNavigate();
+
 
 
     const [liveWeight, setLiveWeight] = useState(null);
@@ -209,7 +215,41 @@ useEffect(() => {
         }
     };
 
+    const params = new URLSearchParams(location.search);
+    const secondWeightMode = params.get("mode") === "second_weight";
+    const urlTicketId = params.get("ticket");
+    useEffect(() => {
+        if (secondWeightMode && urlTicketId) {
+            setStep(4);
+            setTicketId(urlTicketId);
+            fetchTicketData(urlTicketId);
+        }
+    }, [secondWeightMode, urlTicketId]);
 
+    const fetchTicketData = async (id) => {
+        try {
+            const ticket = await ticketAPI.getOne(id);
+            setSelectedVehicle(ticket.vehicle);
+            setSelectedDriver(ticket.driver);
+            setSelectedClient(ticket.customer);
+            setSelectedItem(ticket.item);
+            setFarmName(ticket.farm);
+            setNumberOfBoxes(ticket.boxes_number);
+            setNumberOfBirds(ticket.birds_number);
+            setNotes(ticket.notes);
+        } catch (err) {
+            console.error("Error loading ticket for second weight:", err);
+        }
+    };
+    const handleSaveSecondWeight = async () => {
+        try {
+            await ticketAPI.update(ticketId, { second_weight: parseFloat(liveWeight) });
+            alert("✅ تم حفظ الوزن الثاني بنجاح");
+            navigate("/tickets");
+        } catch (error) {
+            alert("❌ فشل في حفظ الوزن الثاني");
+        }
+    };
     return (
         <div className="p-8 space-y-8">
             {/* Stepper */}
@@ -649,6 +689,152 @@ useEffect(() => {
                         </div>
                     </>
                 )}
+                {step === 4 && (
+                    <>
+                        <div className="grid grid-cols-2 gap-6 [direction:rtl]">
+                            {/* RIGHT SIDE: Ticket Info */}
+                            <div className="space-y-4">
+                                {/* VEHICLE INFO */}
+                                {selectedVehicle && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <h4 className="font-bold mb-2">بيانات المركبة</h4>
+                                        <p>رقم اللوحة: {selectedVehicle.plate}</p>
+                                        <p>نوع السيارة: {selectedVehicle.type}</p>
+                                        <p>الماركة: {selectedVehicle.model}</p>
+                                        <p>الرخصة: {selectedVehicle.license}</p>
+                                    </div>
+                                )}
+
+                                {/* DRIVER INFO */}
+                                {selectedDriver && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <h4 className="font-bold mb-2">بيانات السائق</h4>
+                                        <p>الاسم: {selectedDriver.name}</p>
+                                        <p>رخصة القيادة: {selectedDriver.license}</p>
+                                    </div>
+                                )}
+
+                                {/* CLIENT INFO */}
+                                {selectedClient && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <h4 className="font-bold mb-2">بيانات العميل</h4>
+                                        <p>اسم العميل: {selectedClient.name}</p>
+                                        <p>رقم الهاتف: {selectedClient.phone}</p>
+                                    </div>
+                                )}
+
+                                {/* ITEM INFO */}
+                                {selectedItem && (
+                                    <div className="bg-gray-100 p-4 rounded-lg space-y-1 relative">
+                                        <h4 className="font-bold mb-2">معلومات الحمولة</h4>
+                                        <p>
+                                            <span className="font-semibold">الاسم:</span>{selectedItem.name}
+
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">القطاع:</span>{selectedItem.sector}
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">النوع:</span>{selectedItem.type}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* LEFT SIDE: Live Weight + Farm Fields */}
+                            <div className="flex flex-col bg-gray-100 p-6 rounded-xl space-y-4">
+                                {/* Scale Display */}
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-500">قراءة الميزان الحالية</span>
+                                    <Scale className="w-5 h-5 text-indigo-500" />
+                                </div>
+
+                                <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
+                                    {liveWeight !== null ? `${liveWeight} كجم` : "—"}
+                                </div>
+                                <span className="block text-sm text-gray-600 text-left mt-2"></span>
+
+                                {/* Scale Selector */}
+                                <div>
+                                    <label className="block mb-1 text-sm">اختر الميزان</label>
+                                    <select
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        value={selectedScale || ""}
+                                        onChange={(e) => setSelectedScale(e.target.value)}
+                                    >
+                                        <option value="">اختر الميزان</option>
+                                        {scales.map((scale) => (
+                                            <option key={scale.id} value={scale.id}>
+                                                {scale.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        className="mt-2 py-2 w-full bg-indigo-500 text-white rounded"
+                                    >
+                                        قراءة الوزن الحالي
+                                    </button>
+                                </div>
+
+                                {/* Farm Fields */}
+                                <div>
+                                    <label className="block mb-1 text-sm">اسم المزرعة</label>
+                                    <input
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        value={farmName}
+                                        onChange={(e) => setFarmName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block mb-1 text-sm">عدد الأقفاص</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-2 border rounded text-right"
+                                            value={numberOfBoxes}
+                                            onChange={(e) => setNumberOfBoxes(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1 text-sm">عدد الطيور</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-2 border rounded text-right"
+                                            value={numberOfBirds}
+                                            onChange={(e) => setNumberOfBirds(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm">ملاحظات</label>
+                                    <textarea
+                                        rows="2"
+                                        className="w-full px-4 py-2 border rounded text-right"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Unified Buttons Row */}
+                        <div className="col-span-2 flex justify-center gap-4 mt-8">
+                            <button className="py-2 px-4 border rounded text-gray-600 hover:bg-gray-200">
+                                🖨️ طباعة
+                            </button>
+                            <button
+                                onClick={handleSaveSecondWeight}
+                                className="py-2 px-6 bg-indigo-500 text-white font-bold rounded-lg"
+                            >
+                                حفظ الوزن الثاني
+                            </button>
+                        </div>
+                    </>
+                )}
+
+
             </div>
         </div>
     );

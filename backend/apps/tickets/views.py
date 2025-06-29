@@ -154,6 +154,13 @@ class TicketListAPIView(APIView):
     def get(self, request):
         tickets = Ticket.objects.all()
 
+        is_completed = request.query_params.get('is_completed')
+        if is_completed is not None:
+            if is_completed.lower() == 'true':
+                tickets = tickets.filter(is_completed=True)
+            elif is_completed.lower() == 'false':
+                tickets = tickets.filter(is_completed=False)
+
         tickets = apply_date_range_filter(tickets, request, 'created_at')
 
         result = apply_search_order_pagination(

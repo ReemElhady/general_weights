@@ -13,6 +13,7 @@ const navIcons = [
   { src: "/drivers.png", active: "/active-drivers.png", path: "/drivers"},
   { src: "/scales.png", active: "/active-scales.png", path: "/scales"},
   { src: "/blocked-vehicles.png", active: "/active-blocked-vehicles.png", path: "/blocked-vehicles" },
+  { src: "/blocked-vehicles.png", active: "/active-blocked-vehicles.png", path: "/items" },
 ];
 
 const Sidebar = () => {

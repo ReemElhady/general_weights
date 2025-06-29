@@ -99,6 +99,11 @@ const Tickets = () => {
       error("", "فشل في حذف التذكرة");
     }
   };
+  const handlePrint = (id) => {
+    console.log("Printing ticket:", id);
+    // You can redirect to a print page or open print window here
+  };
+
 
   const toggleMenu = (id) => {
     setTickets((prev) =>
@@ -124,27 +129,18 @@ const Tickets = () => {
     <div className="pt-2 px-6 space-y-4">
       {/* Top Search and Tabs */}
       <div className="flex justify-between mb-4">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => {
-            setPagination((prev) => ({ ...prev, page: 1 }));
-            setSearchTerm(e.target.value);
-          }}
-          placeholder="... البحث عن التذاكر"
-          className="w-full max-w-md pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
-        />
+
 
         {/* Tabs */}
         <div className="flex gap-2 ml-4">
           <button
             onClick={() => {
-              setActiveTab("all");
+              setActiveTab("incomplete");
               setPagination((prev) => ({ ...prev, page: 1 }));
             }}
-            className={`px-4 py-2 rounded ${activeTab === "all" ? "bg-indigo-500 text-white" : "bg-gray-100"}`}
+            className={`px-4 py-2 rounded ${activeTab === "incomplete" ? "bg-red-500 text-white" : "bg-gray-100"}`}
           >
-            كل التذاكر
+            غير مكتملة 🚩
           </button>
           <button
             onClick={() => {
@@ -157,14 +153,25 @@ const Tickets = () => {
           </button>
           <button
             onClick={() => {
-              setActiveTab("incomplete");
+              setActiveTab("all");
               setPagination((prev) => ({ ...prev, page: 1 }));
             }}
-            className={`px-4 py-2 rounded ${activeTab === "incomplete" ? "bg-red-500 text-white" : "bg-gray-100"}`}
+            className={`px-4 py-2 rounded ${activeTab === "all" ? "bg-indigo-500 text-white" : "bg-gray-100"}`}
           >
-            غير مكتملة 🚩
+            كل التذاكر
           </button>
         </div>
+
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => {
+            setPagination((prev) => ({ ...prev, page: 1 }));
+            setSearchTerm(e.target.value);
+          }}
+          placeholder="... البحث عن التذاكر"
+          className="w-full max-w-md pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
+        />
       </div>
 
       {/* Tickets Table */}
@@ -181,18 +188,29 @@ const Tickets = () => {
                   {renderArrows("id")}
                 </div>
               </th>
-              <th className="py-3 px-4">نوع التذكرة</th>
-              <th className="py-3 px-4">السيارة</th>
-              <th className="py-3 px-4">السائق</th>
-              <th className="py-3 px-4">الوزن الأول</th>
+              <th className="py-3 px-4 text-center">السيارة</th>
+              <th className="py-3 px-4 text-center">السائق</th>
+              <th className="py-3 px-4 text-center">العميل</th>
+              <th className="py-3 px-4 text-center">البضاعة</th>
+              <th className="py-3 px-4 text-center">نوع التذكرة</th>
+              <th className="py-3 px-4 text-center">الوزن الأول</th>
               <th onClick={() => toggleOrdering("created_at")} className="py-3 px-4 cursor-pointer">
                 <div className="flex flex-row items-center text-right">
-                  التاريخ
+                  تاريخ الوزن الأول
                   {renderArrows("created_at")}
                 </div>
               </th>
-              <th className="py-3 px-4"></th>
-              <th className="py-3 px-4"></th>
+              <th className="py-3 px-4 text-center">الوزن الثاني</th>
+              <th onClick={() => toggleOrdering("created_at")} className="py-3 px-4 cursor-pointer">
+                <div className="flex flex-row items-center text-right">
+                  تاريخ الوزن الثاني
+                  {renderArrows("created_at")}
+                </div>
+              </th>
+              <th className="py-3 px-4 text-center">صافي الوزن</th>
+              <th className="py-3 px-4 text-center w-24">الحالة</th>
+              <th className="py-2 px-3 text-center"></th>
+              <th className="py-1 px-1 text-center"></th>
             </tr>
           </thead>
           <tbody className="text-sm">
@@ -200,7 +218,6 @@ const Tickets = () => {
               <tr
                 key={ticket.id}
                 className="border-b hover:bg-gray-100 cursor-pointer"
-                onClick={() => setSelectedTicketId(ticket.id)}
               >
                 <td className="py-2 px-4">
                   <input
@@ -210,13 +227,31 @@ const Tickets = () => {
                     onChange={() => toggleSelect(ticket.id)}
                   />
                 </td>
-                <td className="py-2 px-4">{ticket.id}</td>
-                <td className="py-2 px-4">{ticket.ticket_type === "IN" ? "تفريغ" : "مبيعات"}</td>
-                <td className="py-2 px-4">{ticket.vehicle?.plate}</td>
-                <td className="py-2 px-4">{ticket.driver?.name}</td>
-                <td className="py-2 px-4">{ticket.first_weight || "—"}</td>
-                <td className="py-2 px-4">{ticket.created_at?.slice(0, 10)}</td>
-                <td className="py-2 px-4">
+                <td className="py-2 px-4 text-center" onClick={() => setSelectedTicketId(ticket.id)}>{ticket.id}</td>
+                <td className="py-2 px-4 text-center">{ticket.vehicle?.plate}</td>
+                <td className="py-2 px-4 text-center">{ticket.driver?.name}</td>
+                <td className="py-2 px-4 text-center">{ticket.customer?.name}</td>
+                <td className="py-2 px-4 text-center">{ticket.item?.name}</td>
+                <td className="py-2 px-4 text-center">{ticket.ticket_type === "IN" ? "تفريغ" : "مبيعات"}</td>
+                <td className="py-2 px-4 text-center">{ticket.first_weight || "—"}</td>
+                <td className="py-2 px-4 text-center">{ticket.first_weight_date?.slice(0, 10)}</td>
+                <td className="py-2 px-4 text-center">{ticket.second_weight || "—"}</td>
+                <td className="py-2 px-4 text-center">{ticket.second_weight_date?.slice(0, 10) || "—"}</td>
+                <td className="py-2 px-4 text-center">{ticket.net_weight || "—"}</td>
+                <td className="py-2 px-4 text-center">
+                  {ticket.is_completed ? (
+                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                      مكتملة
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                      غير مكتملة
+                    </span>
+                  )}
+                </td>
+
+
+                <td className="py-2 px-4 text-center">
                   {!ticket.second_weight && activeTab !== "completed" && (
                     <button
                       className="px-4 py-1 bg-indigo-500 text-white rounded text-xs"
@@ -225,18 +260,41 @@ const Tickets = () => {
                         handleSecondWeight(ticket.id);
                       }}
                     >
-                      وزن تاني
+                      الوزن الثاني
                     </button>
                   )}
                 </td>
-                <td>
-                <button
-                          className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-right"
+                <td className="py-2 px-4 relative text-center">
+                  <div className="relative inline-block text-left">
+                    <button
+                      type="button"
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => toggleMenu(ticket.id)}
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
+                      </svg>
+                    </button>
+
+                    {ticket.showMenu && (
+                      <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10">
+                        <button
+                          className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-center"
+                          onClick={() => handlePrint(ticket.id)}
+                        >
+                          طباعة
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-center"
                           onClick={() => handleDelete(ticket.id)}
                         >
                           حذف
                         </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
+
               </tr>
 
             ))}

@@ -62,8 +62,11 @@ const AddItemModal = ({ onClose }) => {
                             className="border rounded px-3 py-2 focus:outline-none focus:ring"
                         >
                             <option value="">اختر القطاع</option>
-                            <option value="type1">حي</option>
-                            <option value="type2">نافق</option>
+                            <option value="type1">طيور</option>
+                            <option value="type2">زراعة</option>
+                            <option value="type3">اغنام</option>
+                            <option value="type3">صلب</option>
+
                         </select>
                     </div>
 
@@ -76,9 +79,9 @@ const AddItemModal = ({ onClose }) => {
                             className="border rounded px-3 py-2 focus:outline-none focus:ring"
                         >
                             <option value="">اختر النوع</option>
-                            <option value="type1">طيور</option>
-                            <option value="type2">زراعة</option>
-                            <option value="type3">اغنام</option>
+                            <option value="type1">حي</option>
+                            <option value="type2">نافق</option>
+                            
                         </select>
                     </div>
 

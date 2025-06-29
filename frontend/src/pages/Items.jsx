@@ -145,8 +145,8 @@ const Items = () => {
               onChange={(e) => {
                 setPagination((prev) => ({ ...prev, page: 1 }));
                 setSearchTerm(e.target.value);
-              placeholder="... البحث عن العناصر"
               }}
+              placeholder="... البحث عن العناصر"
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
             />
           </div>

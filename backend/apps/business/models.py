@@ -123,20 +123,21 @@ class Client(models.Model):
 
 
 class Item(models.Model):
-    SECTOR_CHOICES = [
-        ('طيور', 'طيور'),
-        ('زراعة', 'زراعة'),
-        ('اغنام', 'اغنام'),
-    ]
+    # SECTOR_CHOICES = [
+    #     ('طيور', 'طيور'),
+    #     ('زراعة', 'زراعة'),
+    #     ('اغنام', 'اغنام'),
+    # ]
 
-    TYPE_CHOICES = [
-        ('حي', 'حي'),
-        ('نافق', 'نافق'),
-    ]
+    # TYPE_CHOICES = [
+    #     ('حي', 'حي'),
+    #     ('نافق', 'نافق'),
+    # ]
 
     name = models.CharField(max_length=100, null=True)
-    sector = models.CharField(max_length=10, choices=SECTOR_CHOICES)
-    type = models.CharField(max_length=5, choices=TYPE_CHOICES, null=True)
+    sector = models.CharField(max_length=10)
+    type = models.CharField(max_length=15, null=True)
+    notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.sector} - {self.type}"

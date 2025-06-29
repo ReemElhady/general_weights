@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import AddClientModal from "../components/clients/AddClientModal";
-import EditClientModel from "../components/clients/EditClientModel";
-import { clientAPI } from "../utils/client";
+import AddItemModal from "../components/items/AddItemModal";
+import EditItemModel from "../components/items/EditItemModel";
+import { itemAPI } from "../utils/item";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { useToast } from "../components/ui/toast";
 
@@ -9,24 +9,24 @@ import { useToast } from "../components/ui/toast";
 const Items = () => {
   const { success, error } = useToast();
   const [showModal, setShowModal] = useState(false);
-  const [clients, setClients] = useState([]);
-  const [selectedClients, setSelectedClients] = useState([]);
+  const [items, setItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [selectedAll, setSelectedAll] = useState(false);
-  const [editingClientId, setEditingClientId] = useState(null);
+  const [editingItemId, seteditingItemId] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [searchTerm, setSearchTerm] = useState("");
   const [ordering, setOrdering] = useState("id"); // default ordering
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      fetchClients();
+      fetchItems();
     }, 500);
     return () => clearTimeout(delayDebounce);
   }, [searchTerm, pagination.page, ordering]);
 
-  const fetchClients = async () => {
+  const fetchItems = async () => {
     try {
-      const data = await clientAPI.get({
+      const data = await itemAPI.get({
         page: pagination.page,
         page_size: import.meta.env.VITE_PAGE_SIZE || 10,
         search: searchTerm,
@@ -38,7 +38,7 @@ const Items = () => {
         showMenu: false,
       }));
 
-      setClients(results);
+      setItems(results);
       setPagination((prev) => ({
         ...prev,
         totalPages: data.total_pages || 1,
@@ -71,21 +71,21 @@ const Items = () => {
 
   const toggleSelectAll = () => {
     if (selectedAll) {
-      setSelectedClients([]);
+      setSelectedItems([]);
     } else {
-      setSelectedClients(clients.map((c) => c.id));
+      setSelectedItems(items.map((c) => c.id));
     }
     setSelectedAll(!selectedAll);
   };
 
   const toggleSelect = (id) => {
-    setSelectedClients((prev) =>
+    setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
   const toggleMenu = (id) => {
-    setClients((prev) =>
+    setItems((prev) =>
       prev.map((c) =>
         c.id === id ? { ...c, showMenu: !c.showMenu } : { ...c, showMenu: false }
       )
@@ -95,8 +95,8 @@ const Items = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("هل أنت متأكد من حذف هذا العميل؟")) return;
     try {
-      await clientAPI.delete(id);
-      fetchClients();
+      await itemAPI.delete(id);
+      fetchItems();
       success("", "تم حذف العميل بنجاح");
     } catch (err) {
       error("", "فشل في حذف العميل");
@@ -119,7 +119,7 @@ const Items = () => {
           onClick={() => setShowModal(true)}
           className="w-[121px] h-[36px] px-[12px] py-[6px] border border-[#5F4DEE] text-[#5F4DEE] rounded-[6px] flex items-center justify-center gap-2 hover:bg-[#5F4DEE] hover:text-white transition-colors"
         >
-          + إضافة عميل
+          + إضافة عنصر
         </button>
 
         <div className="flex flex-col w-full max-w-xl">
@@ -145,8 +145,8 @@ const Items = () => {
               onChange={(e) => {
                 setPagination((prev) => ({ ...prev, page: 1 }));
                 setSearchTerm(e.target.value);
+              placeholder="... البحث عن العناصر"
               }}
-              placeholder="... البحث عن العملاء"
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
             />
           </div>
@@ -180,73 +180,66 @@ const Items = () => {
                   {renderArrows("name")}
                 </div>
               </th>
-              <th className="py-3 px-4 text-right">الشخص المسؤول</th>
-              <th className="py-3 px-4 text-right">الهاتف</th>
-              <th className="py-3 px-4 text-right">البريد الإلكتروني</th>
               <th
                 className="py-3 px-4 cursor-pointer select-none text-right"
-                onClick={() => toggleOrdering("joined_at")}
+                onClick={() => toggleOrdering("sector")}
               >
                 <div className="flex flex-row items-center text-right">
-                  <span className="ml-auto">تاريخ/وقت الإضافة</span>
-                  {renderArrows("joined_at")}
+                  القطاع
+                  {renderArrows("sector")}
                 </div>
               </th>
-              <th className="py-3 px-4 text-right">الحالة</th>
+              <th
+                className="py-3 px-4 cursor-pointer select-none text-right"
+                onClick={() => toggleOrdering("type")}
+              >
+                <div className="flex flex-row items-center text-right">
+                  النوع
+                  {renderArrows("type")}
+                </div>
+              </th>
               <th className="py-3 px-4"></th>
             </tr>
           </thead>
           <tbody className="text-sm">
-            {clients.map((client) => (
-              <tr key={client.id} className="border-b">
+            {items.map((item) => (
+              <tr key={item.id} className="border-b">
                 <td className="py-2 px-4">
                   <input
                     type="checkbox"
-                    checked={selectedClients.includes(client.id)}
-                    onChange={() => toggleSelect(client.id)}
+                    checked={selectedItems.includes(item.id)}
+                    onChange={() => toggleSelect(item.id)}
                   />
                 </td>
-                <td className="py-2 px-4">{client.id}</td>
-                <td className="py-2 px-4">{client.name}</td>
-                <td className="py-2 px-4">{client.manager}</td>
-                <td className="py-2 px-4">{client.phone || "—"}</td>
-                <td className="py-2 px-4">{client.email || "—"}</td>
-                <td className="py-2 px-4">{client.joined_at}</td>
-                <td className="py-2 px-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${client.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {client.status === "active" ? "نشط" : "غير نشط"}
-                  </span>
-                </td>
+                <td className="py-2 px-4">{item.id}</td>
+                <td className="py-2 px-4">{item.name}</td>
+                <td className="py-2 px-4">{item.type || "-"}</td>
+                <td className="py-2 px-4">{item.sector || "—"}</td>
                 <td className="py-2 px-4 relative">
                   <div className="relative inline-block text-left">
                     <button
                       type="button"
                       className="text-gray-500 hover:text-gray-700"
-                      onClick={() => toggleMenu(client.id)}
+                      onClick={() => toggleMenu(item.id)}
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
                       </svg>
                     </button>
-                    {client.showMenu && (
+                    {item.showMenu && (
                       <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10">
                         <button
                           className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right"
                           onClick={() => {
-                            setEditingClientId(client.id);
-                            toggleMenu(client.id);
+                            seteditingItemId(item.id);
+                            toggleMenu(item.id);
                           }}
                         >
                           تعديل
                         </button>
                         <button
                           className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-right"
-                          onClick={() => handleDelete(client.id)}
+                          onClick={() => handleDelete(item.id)}
                         >
                           حذف
                         </button>
@@ -285,24 +278,24 @@ const Items = () => {
       </div>
 
       {/* Modals */}
-      {editingClientId && (
+      {editingItemId && (
         <div>
-        <EditClientModel
-          clientId={editingClientId}
+        <EditItemModel
+          itemId={editingItemId}
           onClose={() => {
-            setEditingClientId(null);
-            fetchClients();
+            seteditingItemId(null);
+            fetchItems();
           }}
         />
         </div>
       )}
       {showModal && (
-        <AddClientModal
+        <AddItemModal
           onClose={() => {
             setShowModal(false);
             setOrdering("-id"); // newest first
             setPagination((prev) => ({ ...prev, page: 1 }));
-            fetchClients();
+            fetchItems();
           }}
         />
       )}

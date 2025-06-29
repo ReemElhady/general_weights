@@ -45,15 +45,10 @@ const LiveWeightPage = ({ scaleId }) => {
   }, [scaleId]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 p-4" dir="rtl">
-      <h1 className="text-2xl font-bold mb-4">الوزن المباشر</h1>
-      <div className="text-center text-gray-600 mb-2">{status}</div>
-
-      <div className="bg-white p-6 rounded shadow text-center text-4xl font-bold text-green-600 w-64">
-        {liveWeight !== null ? `${liveWeight} كجم` : "—"}
-      </div>
-    </div>
+  <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
+    {liveWeight !== null ? `${liveWeight} كجم` : "—"}
+  </div>
   );
-};
+}
 
 export default LiveWeightPage;

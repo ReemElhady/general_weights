@@ -5,6 +5,7 @@ import { clientAPI } from "../utils/client";
 import { driverAPI } from "../utils/driver";
 import { vehicleAPI } from "../utils/vehicle";
 import { useNavigate } from "react-router-dom";
+import LiveWeightPage from "./LiveWeightPage";
 
 const FirstWeight = () => {
     const [vehicleList, setVehicleList] = useState([]);
@@ -146,22 +147,47 @@ const FirstWeight = () => {
     };
     const navigate = useNavigate();
 
+
+    const [liveWeight, setLiveWeight] = useState(null);
+
+useEffect(() => {
+  if (!selectedScale) return;
+
+  const socket = new WebSocket("ws://localhost:8000/ws/scale/");
+
+  socket.onopen = () => {
+    socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.weight) {
+      const cleanWeight = data.weight.replace(/#/g, "").trim();
+      setLiveWeight(cleanWeight);
+    }
+  };
+
+  return () => socket.close();
+}, [selectedScale]);
+
+
     const handleSaveTicket = async () => {
         try {
             const payload = {
-                scale: selectedScale,
-                vehicle: selectedVehicle?.id,
-                driver: selectedDriver?.id,
-                customer: selectedClient?.id,
-                ticket_type: ticketType,
-                first_weight: 1200, // Replace 0 with actual weight reading from the scale hardware
-                first_weight_date: new Date().toISOString(),
-                item: selectedItem,
-                farm: farmName,
-                boxes_number: numberOfBoxes,
-                birds_number: numberOfBirds,
-                notes: notes,
+            scale: selectedScale,
+            vehicle: selectedVehicle?.id,
+            driver: selectedDriver?.id,
+            customer: selectedClient?.id,
+            ticket_type: ticketType,
+            first_weight: parseFloat(liveWeight),   
+            first_weight_date: new Date().toISOString(),
+            item: selectedItem,
+            farm: farmName,
+            boxes_number: numberOfBoxes,
+            birds_number: numberOfBirds,
+            notes: notes,
             };
+
 
             console.log("Submitting Ticket:", payload);
 
@@ -539,9 +565,10 @@ const FirstWeight = () => {
                                 </div>
 
                                 <div className="flex items-center justify-center text-indigo-500 text-[120px] font-bold leading-none tracking-widest h-40">
-                                    0
+                                {liveWeight !== null ? `${liveWeight} كجم` : "—"}
                                 </div>
-                                <span className="block text-sm text-gray-600 text-left mt-2">KG</span>
+
+                                <span className="block text-sm text-gray-600 text-left mt-2"></span>
 
                                 {/* Scale Dropdown */}
                                 <div>
@@ -554,7 +581,7 @@ const FirstWeight = () => {
                                         <option value="">اختر الميزان</option>
                                         {scales.map((scale) => (
                                             <option key={scale.id} value={scale.id}>
-                                                {scale.name} - {scale.location}
+                                                {scale.name}
                                             </option>
                                         ))}
                                     </select>

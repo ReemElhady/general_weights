@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import { scaleAPI } from '../../utils/scale';
+import { useToast } from "../ui/toast";
 
-const AddScaleModal = ({ onClose }) => {
+const AddScaleModal = ({ onClose, onScaleAdded }) => {
   const [form, setForm] = useState({
     name: '',
     manufacturer: '',
@@ -34,9 +36,16 @@ const AddScaleModal = ({ onClose }) => {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-
-  const handleSubmit = async (e) => {
+    const { success, error } = useToast();
+    const handleSubmit = async (e) => {
     e.preventDefault();
+
+    
+
+    if (!form.name) {
+    error("", "برجاء ملء  اسم الميزان ");
+    return;
+  }
     const payload = { ...form };
 
     Object.keys(payload).forEach((key) => {
@@ -61,164 +70,248 @@ const AddScaleModal = ({ onClose }) => {
       ['ip', 'port'].forEach(f => delete payload[f]);
     }
 
+    
+
     try {
-      const res = await fetch("http://localhost:8000/api/v1/business/scales/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        onClose();
-        window.location.reload();
-      } else {
-        const data = await res.json();
-        alert("فشل في إضافة الميزان: " + JSON.stringify(data));
-      }
+      const newScale = await scaleAPI.create(payload);  
+      onScaleAdded(newScale);                         
+      onClose();                                       
+      success("", "تم إضافة الميزان بنجاح");
     } catch (err) {
-      alert("حدث خطأ أثناء الإرسال");
+      error("", err.message || "فشل في حفظ الميزان");
     }
   };
 
+
   const modal = (
-    <div dir="rtl" className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
+    <div dir="rtl" className="fixed top-0 left-0 right-0 bottom-0 bg-[#00000066] flex justify-center items-center z-[9999]">
       <div className="absolute inset-0" onClick={onClose}></div>
 
-      <div className="relative scrollbar-hide z-[10000] bg-white p-3 rounded-lg w-full max-w-2xl text-right shadow-lg overflow-y-auto max-h-[90vh] text-sm" onClick={(e) => e.stopPropagation()}>
+<div
+  className="relative scrollbar-hide z-[10000] bg-white p-6 rounded-lg text-right shadow-lg overflow-y-auto text-sm"
+  style={{ width: '645px', height: '644px' }}
+  onClick={(e) => e.stopPropagation()}
+>
         <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-semibold">إضافة سائق</h2>
-                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-lg font-bold">
-                            ×
-                        </button>
-                    </div>
-        <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
-          <div className="flex flex-col">
-            <label className="mb-1">اسم الميزان</label>
-            
-            <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded" />
-          </div>
+            <h2 className="text-lg font-semibold">إضافة ميزان</h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-lg font-bold">
+                ×
+            </button>
+        </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2 ">
+         <div className="flex gap-5">
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">اسم الميزان *</label>
+    <input
+      name="name"
+      value={form.name}
+      onChange={handleChange}
+      className="input-field-3"
+    />
+  </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1">الشركة المصنعة</label>
-            <input name="manufacturer" value={form.manufacturer} onChange={handleChange} className="border p-2 rounded" />
-          </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">الشركة المصنعة</label>
+    <input
+      name="manufacturer"
+      value={form.manufacturer}
+      onChange={handleChange}
+      className="input-field-3"
+    />
+  </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1">الموديل</label>
-            <input name="model" value={form.model} onChange={handleChange} className="border p-2 rounded" />
-          </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">الموديل</label>
+    <input
+      name="model"
+      value={form.model}
+      onChange={handleChange}
+      className="input-field-3"
+    />
+  </div>
+</div>
 
-          <div className="col-span-3">
-            <label className="block mb-1">نوع الاتصال</label>
-            <select
-              name="connection_type"
-              value={form.connection_type}
-              onChange={handleChange}
-              className="border p-2 rounded w-full"
-            >
-              <option value="tcp">TCP</option>
-              <option value="serial">Serial</option>
-            </select>
-          </div>
+
+<div className="col-span-3">
+  <label className="block mb-1 text-sm font-medium text-gray-700">نوع الاتصال *</label>
+  <select
+    name="connection_type"
+    value={form.connection_type}
+    onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+  >
+    <option value="tcp">TCP</option>
+    <option value="serial">Serial</option>
+  </select>
+</div>
+
 
           {form.connection_type === 'tcp' && (
             <>
-              <div className="flex flex-col">
-                <label className="mb-1">عنوان الوصول (IP)</label>
-                <input name="ip" value={form.ip} onChange={handleChange} className="border p-2 rounded" />
-              </div>
-              <div className="flex flex-col">
-                <label className="mb-1">البورت</label>
-                <input name="port" value={form.port} onChange={handleChange} className="border p-2 rounded" />
-              </div>
+  
+             <div className="col-span-3 grid grid-cols-2 gap-4">
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">عنوان الوصول (IP) *</label>
+    <input
+      name="ip"
+      value={form.ip}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">البورت *</label>
+    <input
+      name="port"
+      value={form.port}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+</div>
+
+
             </>
           )}
 
           {form.connection_type === 'serial' && (
             <>
               <div className="flex flex-col">
-                <label className="mb-1">المنفذ التسلسلي</label>
-                <select name="serial_port" value={form.serial_port} onChange={handleChange} className="border p-2 rounded">
-                  <option value="">اختر</option>
-                  {["COM1", "COM2", "COM3", "COM4", "COM5", "COM6"].map(port => (
-                    <option key={port} value={port}>{port}</option>
-                  ))}
-                </select>
-              </div>
+  <label className="mb-1 text-sm font-medium text-gray-700">المنفذ التسلسلي</label>
+  <select
+    name="serial_port"
+    value={form.serial_port}
+    onChange={handleChange}
+    className="h-10 w-[185px] px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+  >
+    <option value="">اختر</option>
+    {["COM1", "COM2", "COM3", "COM4", "COM5", "COM6"].map(port => (
+      <option key={port} value={port}>{port}</option>
+    ))}
+  </select>
+</div>
 
-              <div className="flex flex-col">
-                <label className="mb-1">معدل الباود</label>
-                <select name="baudrate" value={form.baudrate} onChange={handleChange} className="border p-2 rounded">
-                  <option value="">اختر</option>
-                  {[110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400].map(rate => (
-                    <option key={rate} value={rate}>{rate}</option>
-                  ))}
-                </select>
-              </div>
+<div className="flex flex-col">
+  <label className="mb-1 text-sm font-medium text-gray-700">معدل الباود</label>
+  <select
+    name="baudrate"
+    value={form.baudrate}
+    onChange={handleChange}
+    className="h-10 w-[185px] px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+  >
+    <option value="">اختر</option>
+    {[110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400].map(rate => (
+      <option key={rate} value={rate}>{rate}</option>
+    ))}
+  </select>
+</div>
 
-              <div className="flex flex-col">
-                <label className="mb-1">التكافؤ</label>
-                <select name="parity" value={form.parity} onChange={handleChange} className="border p-2 rounded">
-                  <option value="">اختر</option>
-                  {["none", "even", "odd", "mark", "space"].map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
+<div className="flex flex-col">
+  <label className="mb-1 text-sm font-medium text-gray-700">التكافؤ</label>
+  <select
+    name="parity"
+    value={form.parity}
+    onChange={handleChange}
+    className="h-10 w-[185px] px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+  >
+    <option value="">اختر</option>
+    {["none", "even", "odd", "mark", "space"].map(p => (
+      <option key={p} value={p}>{p}</option>
+    ))}
+  </select>
+</div>
 
-              <div className="flex flex-col">
-                <label className="mb-1">عدد البتات الوقوف</label>
-                <select name="stop_bits" value={form.stop_bits} onChange={handleChange} className="border p-2 rounded">
-                  <option value="">اختر</option>
-                  {[1, 1.5, 2].map(val => (
-                    <option key={val} value={val}>{val}</option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="flex flex-col">
-                <label className="mb-1">التحكم في التدفق</label>
-                <select name="flow_control" value={form.flow_control} onChange={handleChange} className="border p-2 rounded">
-                  <option value="">اختر</option>
-                  {["none", "hardware", "Xon/Xoff"].map(val => (
-                    <option key={val} value={val}>{val}</option>
-                  ))}
-                </select>
-              </div>
+              <div className="col-span-3 grid grid-cols-2 gap-4">
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">عدد البتات الوقوف</label>
+    <select
+      name="stop_bits"
+      value={form.stop_bits}
+      onChange={handleChange}
+      className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      <option value="">اختر</option>
+      {[1, 1.5, 2].map(val => (
+        <option key={val} value={val}>{val}</option>
+      ))}
+    </select>
+  </div>
+
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">التحكم في التدفق</label>
+    <select
+      name="flow_control"
+      value={form.flow_control}
+      onChange={handleChange}
+      className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      <option value="">اختر</option>
+      {["none", "hardware", "Xon/Xoff"].map(val => (
+        <option key={val} value={val}>{val}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
             </>
           )}
 
-          <div className="flex flex-col">
-            <label className="mb-1">التأخير</label>
-            <select name="delay" value={form.delay} onChange={handleChange} className="border p-2 rounded">
-              <option value="">اختر</option>
-              {[1, 0.75, 0.5, 0.25, 0.1].map(val => (
-                <option key={val} value={val}>{val}</option>
-              ))}
-            </select>
-          </div>
+          <div className="col-span-3 grid grid-cols-2 gap-4">
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">التأخير</label>
+    <select
+      name="delay"
+      value={form.delay}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      <option value="">اختر</option>
+      {[1, 0.75, 0.5, 0.25, 0.1].map(val => (
+        <option key={val} value={val}>{val}</option>
+      ))}
+    </select>
+  </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1">عدد البتات</label>
-            <select name="bits_number" value={form.bits_number} onChange={handleChange} className="border p-2 rounded">
-              <option value="">اختر</option>
-              {[5,6,7,8,16,32,64,128,256,512,1024].map(val => (
-                <option key={val} value={val}>{val}</option>
-              ))}
-            </select>
-          </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">عدد البتات</label>
+    <select
+      name="bits_number"
+      value={form.bits_number}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      <option value="">اختر</option>
+      {[5,6,7,8,16,32,64,128,256,512,1024].map(val => (
+        <option key={val} value={val}>{val}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
+
              <div className="col-span-3 grid grid-cols-2 gap-4">
-            <div className="flex flex-col">
-              <label className="mb-1">بداية الوزن</label>
-              <input name="weight_start_index" value={form.weight_start_index} onChange={handleChange} className="border p-2 rounded" />
-            </div>
-            <div className="flex flex-col">
-              <label className="mb-1">نهاية الوزن</label>
-              <input name="weight_end_index" value={form.weight_end_index} onChange={handleChange} className="border p-2 rounded" />
-            </div>
-          </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">بداية الوزن</label>
+    <input
+      name="weight_start_index"
+      value={form.weight_start_index}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">نهاية الوزن</label>
+    <input
+      name="weight_end_index"
+      value={form.weight_end_index}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+</div>
+
           <div className="col-span-3 my-4 flex justify-between items-center">
             <label className="text-sm">الحالة</label>
             <label className="inline-flex items-center cursor-pointer">
@@ -246,34 +339,57 @@ const AddScaleModal = ({ onClose }) => {
               </label>
               {form.frontCameraEnabled && (
                 <div className="grid grid-cols-2 gap-4 mt-2 w-full">
-                  <div className="flex flex-col">
-                    <label className="mb-1">عنوان الوصول</label>
-                    <input name="front_camera_ip" value={form.front_camera_ip} onChange={handleChange} className="border p-2 rounded" />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="mb-1">البورت</label>
-                    <input name="front_camera_port" value={form.front_camera_port} onChange={handleChange} className="border p-2 rounded" />
-                  </div>
-                </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">عنوان الوصول</label>
+    <input
+      name="front_camera_ip"
+      value={form.front_camera_ip}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">البورت</label>
+    <input
+      name="front_camera_port"
+      value={form.front_camera_port}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+</div>
+
               )}
             </div>
-
-            <div className="flex flex-col items-start w-full mt-4">
+            </div>
+            <div className="col-span-3 bg-gray-100 p-4 rounded-md">
+            <div className="flex flex-col items-start w-full ">
               <label className="flex items-center gap-2">
                 <input type="checkbox" name="rearCameraEnabled" checked={form.rearCameraEnabled} onChange={handleChange} />
                 <span>الكاميرا الخلفية</span>
               </label>
               {form.rearCameraEnabled && (
                 <div className="grid grid-cols-2 gap-4 mt-2 w-full">
-                  <div className="flex flex-col">
-                    <label className="mb-1">عنوان الوصول</label>
-                    <input name="rear_camera_ip" value={form.rear_camera_ip} onChange={handleChange} className="border p-2 rounded" />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="mb-1">البورت</label>
-                    <input name="rear_camera_port" value={form.rear_camera_port} onChange={handleChange} className="border p-2 rounded" />
-                  </div>
-                </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">عنوان الوصول</label>
+    <input
+      name="rear_camera_ip"
+      value={form.rear_camera_ip}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label className="mb-1 text-sm font-medium text-gray-700">البورت</label>
+    <input
+      name="rear_camera_port"
+      value={form.rear_camera_port}
+      onChange={handleChange}
+    className="h-10 w-full px-4 py-2 text-sm bg-white border border-[rgba(134,143,160,0.16)] shadow-[0_1px_2px_rgba(0,0,0,0.06)] rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+</div>
+
               )}
             </div>
           </div>

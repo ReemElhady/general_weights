@@ -30,6 +30,7 @@ def apply_search_order_pagination(queryset, request, search_fields=None, orderin
     # --- Pagination ---
     page = request.GET.get('page', 1)
     page_size = int(request.GET.get('page_size', env("PAGE_SIZE")))
+    print(f"Page size: {page_size}")
     paginator = Paginator(queryset, page_size)
     current_page = paginator.get_page(page)
 

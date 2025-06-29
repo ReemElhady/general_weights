@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useToast } from "../components/ui/toast";
 
 const Settings = () => {
+  const { success, error } = useToast();
+
   // System Settings
   const [companyName, setCompanyName] = useState("");
   const [paymentType, setPaymentType] = useState("");
@@ -11,8 +14,8 @@ const Settings = () => {
   const [manipulationThreshold, setManipulationThreshold] = useState("");
   const [enableManipulation, setEnableManipulation] = useState(false);
   const [companyLogo, setCompanyLogo] = useState(null);
-  const [logoFileName, setLogoFileName] = useState("");
   const [companyLogoUrl, setCompanyLogoUrl] = useState("");
+  const [systemId, setSystemId] = useState(null);
 
   // Email Settings
   const [emailHost, setEmailHost] = useState("smtp.gmail.com");
@@ -21,49 +24,50 @@ const Settings = () => {
   const [emailHostPassword, setEmailHostPassword] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [useTls, setUseTls] = useState(true);
+  const [emailId, setEmailId] = useState(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const token = localStorage.getItem("token");
 
+        // Fetch system settings
         const resSystem = await fetch("http://localhost:8000/api/v1/company/systemsettings/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (resSystem.ok) {
           const data = await resSystem.json();
           const system = Array.isArray(data) ? data[0] : data;
-
-          setCompanyName(system.company_name || "");
-          setPaymentType(system.payment_type || "");
-          setStartTicketNumber(system.start_ticket_number || "");
-          setWeightMethod(system.weighing_method || "");
-          setWeightUnit(system.weighing_unit || "");
-          setManipulationThreshold(system.manipulation_threshold || "");
-          setEnableManipulation(system.manipulation_threshold > 0);
-          setLogoFileName(system.company_logo ? system.company_logo.split("/").pop() : "");
-          setCompanyLogoUrl(system.company_logo ? `http://localhost:8000${system.company_logo}` : "");
+          if (system) {
+            setSystemId(system.id);
+            setCompanyName(system.company_name || "");
+            setPaymentType(system.payment_type || "");
+            setStartTicketNumber(system.start_ticket_number || "");
+            setWeightMethod(system.weighing_method || "");
+            setWeightUnit(system.weighing_unit || "");
+            setManipulationThreshold(system.manipulation_threshold || "");
+            setEnableManipulation(system.manipulation_threshold > 0);
+            setCompanyLogoUrl(system.company_logo ? `http://localhost:8000${system.company_logo}` : "");
+          }
         }
 
+        // Fetch email settings
         const resEmail = await fetch("http://localhost:8000/api/v1/company/emailsettings/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (resEmail.ok) {
           const data = await resEmail.json();
           const email = Array.isArray(data) ? data[0] : data;
-
-          setEmailHost(email.email_host || "");
-          setEmailPort(email.email_port || 587);
-          setEmailHostUser(email.email_host_user || "");
-          setEmailHostPassword(email.email_host_password || "");
-          setRecipientEmail(email.recipient_email || "");
-          setUseTls(email.use_tls ?? true);
+          if (email) {
+            setEmailId(email.id);
+            setEmailHost(email.email_host || "");
+            setEmailPort(email.email_port || 587);
+            setEmailHostUser(email.email_host_user || "");
+            setRecipientEmail(email.recipient_email || "");
+            setUseTls(email.use_tls ?? true);
+          }
         }
       } catch (error) {
         console.error("❌ فشل تحميل البيانات:", error);
@@ -73,8 +77,12 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
+      const token = localStorage.getItem("token");
+
+      // إعدادات النظام
       const systemForm = new FormData();
       systemForm.append("company_name", companyName);
       systemForm.append("payment_type", paymentType);
@@ -84,37 +92,60 @@ const Settings = () => {
       systemForm.append("manipulation_threshold", enableManipulation ? manipulationThreshold : 0);
       if (companyLogo) systemForm.append("company_logo", companyLogo);
 
-      await axios.post("http://localhost:8000/api/v1/company/systemsettings/", systemForm, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      if (systemId) {
+        await axios.put(`http://localhost:8000/api/v1/company/systemsettings/${systemId}/`, systemForm, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } else {
+        await axios.post("http://localhost:8000/api/v1/company/systemsettings/", systemForm, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
 
-      await fetch("http://localhost:8000/api/v1/company/emailsettings/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          email_host: emailHost,
-          email_port: emailPort,
-          email_host_user: emailHostUser,
-          email_host_password: emailHostPassword,
-          recipient_email: recipientEmail,
-          use_tls: useTls,
-        }),
-      });
+      // إعدادات البريد الإلكتروني
+      const emailData = {
+        email_host: emailHost,
+        email_port: emailPort,
+        email_host_user: emailHostUser,
+        email_host_password: emailHostPassword,
+        recipient_email: recipientEmail,
+        use_tls: useTls,
+      };
 
-      alert("تم حفظ الإعدادات بنجاح");
-    } catch (error) {
-      console.error("تفاصيل الخطأ:", error.response?.data || error.message);
-      alert("حدث خطأ أثناء الحفظ");
+      if (emailId) {
+        await fetch(`http://localhost:8000/api/v1/company/emailsettings/${emailId}/`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(emailData),
+        });
+      } else {
+        await fetch("http://localhost:8000/api/v1/company/emailsettings/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(emailData),
+        });
+      }
+
+      success("", "تم حفظ الإعدادات بنجاح"); // ✅ هنا استخدمنا التوست بدل alert
+    } catch (err) {
+      console.error("❌ حدث خطأ أثناء الحفظ:", err.response?.data || err.message);
+      error(err.message, "حدث خطأ أثناء الحفظ"); // ✅ وهنا كمان بدل alert
     }
   };
 
-  return (
+   return (
     <div className="min-h-screen bg-[#f9f9fb] flex justify-center items-start px-4 pt-2" >
       <div className="relative w-[1280px] flex gap-6 pb-6">
         <div className="bg-white rounded-xl shadow-md shadow-gray-300 p-6 overflow-auto mt-0" style={{ width: "935px" }}>
@@ -168,7 +199,7 @@ const Settings = () => {
                   onChange={(e) => setWeightUnit(e.target.value)}
                 >
                   <option value="">اختر وحدة الوزن</option>
-                  <option value="kg">كيلوجرام</option>
+                  <option value="kg">كجم</option>
                   <option value="ton">طن</option>
                 </select>
               </label>

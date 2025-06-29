@@ -16,7 +16,9 @@ import BlockedVehicles from "./pages/Blocked_Vehicles";
 import Scales from "./pages/Scales";
 import Drivers from "./pages/Drivers";
 import Settings from "./pages/Settings";
+import Items from "./pages/Items";
 import FirstWeight from "./pages/FirstWeight";
+
 
 function App() {
   return (
@@ -103,6 +105,17 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <BlockedVehicles />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/items"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Items />
               </Layout>
             </ProtectedRoute>
           }

@@ -17,6 +17,10 @@ const pageTitles = {
     title: "السيارات المحظورة",
     description: "مراقبة حدود الوزن",
   },
+  "/items": {
+    title: "العناصر",
+    description: "إدارة العناصر المسجلة ومعلوماتها",
+  },
   "/settings": { title: "الإعدادات", description: "ضبط تفضيلات النظام" },
 };
 

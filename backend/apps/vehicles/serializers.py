@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Driver, Vehicle, BlockedVehicle
-
+from apps.users.serializers import UserSerializer
 
 class DriverMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,6 +54,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 class BlockedVehicleSerializer(serializers.ModelSerializer):
     vehicle = VehicleSerializer(read_only=True)  # full nested vehicle data
+    manipulative_user = UserSerializer(read_only=True)
 
     class Meta:
         model = BlockedVehicle

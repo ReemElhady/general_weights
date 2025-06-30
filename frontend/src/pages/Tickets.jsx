@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Filter } from "lucide-react";
 import { ticketAPI } from "../utils/ticket";
 import { useToast } from "../components/ui/toast";
 import TicketDetail from "../components/tickets/ticketDetails";
@@ -15,6 +15,8 @@ const Tickets = () => {
   const [ordering, setOrdering] = useState("-id");
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const navigate = useNavigate();
 
@@ -34,12 +36,17 @@ const Tickets = () => {
         ordering: ordering,
       };
 
-      // Add filter for active tab
+      // Tab filter
       if (activeTab === "completed") {
         params.is_completed = true;
       } else if (activeTab === "incomplete") {
         params.is_completed = false;
       }
+
+      // Date filters
+      if (startDate) params.from = startDate;
+      if (endDate) params.to = endDate;
+
 
       const data = await ticketAPI.get(params);
 
@@ -99,11 +106,10 @@ const Tickets = () => {
       error("", "فشل في حذف التذكرة");
     }
   };
+
   const handlePrint = (id) => {
     console.log("Printing ticket:", id);
-    // You can redirect to a print page or open print window here
   };
-
 
   const toggleMenu = (id) => {
     setTickets((prev) =>
@@ -125,14 +131,73 @@ const Tickets = () => {
     navigate(`/tickets/first-weight?ticket=${ticketId}&mode=second_weight`);
   };
 
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [activeMenuTicketId, setActiveMenuTicketId] = useState(null);
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuTicketId(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+  const handleMenuOpen = (e, ticketId) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMenuPosition({
+      x: rect.left,
+      y: rect.bottom + window.scrollY,
+    });
+    setActiveMenuTicketId(ticketId);
+  };
+
+  const handleExportAllExcel = async () => {
+    try {
+      await ticketAPI.exportAllFilteredExcel({
+        search: searchTerm,
+        ordering,
+        is_completed: activeTab === "completed" ? "true" : activeTab === "incomplete" ? "false" : "",
+        from: startDate,
+        to: endDate,
+      });
+
+    } catch (err) {
+      error("", "فشل تصدير البيانات");
+    }
+  };
+
+  const handleExportAllPDF = async () => {
+    try {
+      await ticketAPI.exportAllFilteredPDF({
+        search: searchTerm,
+        ordering,
+        is_completed: activeTab === "completed" ? "true" : activeTab === "incomplete" ? "false" : "",
+        from: startDate,
+        to: endDate,
+      });
+    } catch (err) {
+      error("", "فشل تصدير البيانات");
+    }
+  };
+
   return (
     <div className="pt-2 px-6 space-y-4">
-      {/* Top Search and Tabs */}
-      <div className="flex justify-between mb-4">
-
-
-        {/* Tabs */}
-        <div className="flex gap-2 ml-4">
+      {/* Tabs Row */}
+      <div className="flex justify-between items-center flex-wrap gap-2 mb-2">
+        {/* Left: Export buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportAllExcel}
+            className="px-3 py-2 bg-green-500 text-white rounded"
+          >
+            Export Excel
+          </button>
+          <button
+            onClick={handleExportAllPDF}
+            className="px-3 py-2 bg-red-500 text-white rounded"
+          >
+            Export PDF
+          </button>
+        </div>
+        {/* Right: Tabs */}
+        <div className="flex gap-2">
           <button
             onClick={() => {
               setActiveTab("incomplete");
@@ -162,17 +227,94 @@ const Tickets = () => {
           </button>
         </div>
 
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => {
-            setPagination((prev) => ({ ...prev, page: 1 }));
-            setSearchTerm(e.target.value);
-          }}
-          placeholder="... البحث عن التذاكر"
-          className="w-full max-w-md pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
-        />
+
       </div>
+
+
+      {/* Filter Row (Date filters + Buttons + Search Input) */}
+      <div className="flex flex-wrap md:flex-nowrap justify-between items-end gap-2 mb-4">
+        {/* Left Side - Date Filters + Buttons */}
+        <div className="flex flex-wrap items-end gap-2">
+          {/* From Date */}
+          <div className="flex flex-col">
+            <label className="text-sm mb-1">من تاريخ</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border px-3 py-2 rounded-md text-right w-36 text-sm"
+            />
+          </div>
+
+          {/* To Date */}
+          <div className="flex flex-col">
+            <label className="text-sm mb-1">إلى تاريخ</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border px-3 py-2 rounded-md text-right w-36 text-sm"
+            />
+          </div>
+
+          {/* Filter Button */}
+          <button
+            onClick={() => fetchTickets()}
+            className="flex items-center gap-1 px-3 py-2 bg-indigo-500 text-white rounded text-sm hover:bg-indigo-600"
+          >
+            <Filter className="w-4 h-4" />
+            تصفية
+          </button>
+
+          {/* Clear Button */}
+          <button
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+              setSearchTerm("");
+              fetchTickets();
+            }}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-300 text-gray-800 rounded text-sm hover:bg-gray-400"
+          >
+            <span className="material-icons text-base"></span>
+            مسح
+          </button>
+        </div>
+
+        {/* Right Side - Search */}
+        <div className="flex flex-col w-full max-w-xl">
+
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setPagination((prev) => ({ ...prev, page: 1 }));
+                setSearchTerm(e.target.value);
+              }}
+              placeholder="... البحث عن التذاكر"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
+            />
+          </div>
+        </div>
+      </div>
+
+
 
       {/* Tickets Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -201,12 +343,7 @@ const Tickets = () => {
                 </div>
               </th>
               <th className="py-3 px-4 text-center">الوزن الثاني</th>
-              <th onClick={() => toggleOrdering("created_at")} className="py-3 px-4 cursor-pointer">
-                <div className="flex flex-row items-center text-right">
-                  تاريخ الوزن الثاني
-                  {renderArrows("created_at")}
-                </div>
-              </th>
+              <th className="py-3 px-4 text-center">تاريخ الوزن الثاني</th>
               <th className="py-3 px-4 text-center">صافي الوزن</th>
               <th className="py-3 px-4 text-center w-24">الحالة</th>
               <th className="py-2 px-3 text-center"></th>
@@ -215,10 +352,7 @@ const Tickets = () => {
           </thead>
           <tbody className="text-sm">
             {tickets.map((ticket) => (
-              <tr
-                key={ticket.id}
-                className="border-b hover:bg-gray-100 cursor-pointer"
-              >
+              <tr key={ticket.id} className="border-b hover:bg-gray-100 cursor-pointer">
                 <td className="py-2 px-4">
                   <input
                     type="checkbox"
@@ -227,7 +361,9 @@ const Tickets = () => {
                     onChange={() => toggleSelect(ticket.id)}
                   />
                 </td>
-                <td className="py-2 px-4 text-center" onClick={() => setSelectedTicketId(ticket.id)}>{ticket.id}</td>
+                <td className="py-2 px-4 text-center" onClick={() => setSelectedTicketId(ticket.id)}>
+                  {ticket.id}
+                </td>
                 <td className="py-2 px-4 text-center">{ticket.vehicle?.plate}</td>
                 <td className="py-2 px-4 text-center">{ticket.driver?.name}</td>
                 <td className="py-2 px-4 text-center">{ticket.customer?.name}</td>
@@ -249,14 +385,12 @@ const Tickets = () => {
                     </span>
                   )}
                 </td>
-
-
                 <td className="py-2 px-4 text-center">
                   {!ticket.second_weight && activeTab !== "completed" && (
                     <button
                       className="px-4 py-1 bg-indigo-500 text-white rounded text-xs"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering row click when clicking button
+                        e.stopPropagation();
                         handleSecondWeight(ticket.id);
                       }}
                     >
@@ -269,14 +403,14 @@ const Tickets = () => {
                     <button
                       type="button"
                       className="text-gray-500 hover:text-gray-700"
-                      onClick={() => toggleMenu(ticket.id)}
+                      onClick={(e) => handleMenuOpen(e, ticket.id)}
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
                       </svg>
                     </button>
 
-                    {ticket.showMenu && (
+                    {/* {ticket.showMenu && (
                       <div className="absolute left-0 mt-2 w-28 bg-white border rounded shadow-lg z-10">
                         <button
                           className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-center"
@@ -290,16 +424,58 @@ const Tickets = () => {
                         >
                           حذف
                         </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-green-600 hover:bg-green-100 text-center"
+                          onClick={() => ticketAPI.exportOne(ticket.id)}
+                        >
+                          Export As Excel
+                        </button>
+
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </td>
-
               </tr>
-
             ))}
           </tbody>
         </table>
+        {activeMenuTicketId && (
+          <div
+            style={{
+              position: "absolute",
+              top: menuPosition.y,
+              left: menuPosition.x,
+              zIndex: 9999,
+            }}
+            className="bg-white border rounded shadow-lg w-32"
+          >
+            <button
+              className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-center"
+              onClick={() => handlePrint(activeMenuTicketId)}
+            >
+              طباعة
+            </button>
+            <button
+              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-center"
+              onClick={() => handleDelete(activeMenuTicketId)}
+            >
+              حذف
+            </button>
+            <button
+              className="w-full px-4 py-2 text-sm text-green-600 hover:bg-green-100 text-center"
+              onClick={() => ticketAPI.exportOne(activeMenuTicketId)}
+            >
+              Export As Excel
+            </button>
+            <button
+              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-center"
+              onClick={() => ticketAPI.exportOnePDF(activeMenuTicketId)}
+            >
+              Export as PDF
+            </button>
+
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="flex justify-between items-center p-4 text-sm text-gray-600">

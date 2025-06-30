@@ -15,6 +15,8 @@ from apps.utils.api_filters import apply_search_order_pagination, apply_date_ran
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
 from django.db.models import Count
+from datetime import datetime, timedelta, date
+import calendar
 
 
 class TicketFirstWeightAPIView(APIView):
@@ -248,13 +250,11 @@ class TicketYearlyAnalyticsAPIView(APIView):
         })
 
 class TicketSummaryAnalyticsAPIView(APIView):
-
     def get(self, request):
         mode = request.query_params.get("mode")  # 'weekly', 'monthly', or None
         year = request.query_params.get("year")
-        month = request.query_params.get("month")  # Optional month (1–12)
+        month = request.query_params.get("month")
 
-        # Validate year
         try:
             year = int(year) if year else now().year
         except ValueError:
@@ -263,18 +263,22 @@ class TicketSummaryAnalyticsAPIView(APIView):
         queryset = Ticket.objects.filter(created_at__year=year)
 
         if mode == "monthly":
-            # Group by month
             data = queryset.annotate(month=TruncMonth("created_at")) \
                             .values("month") \
-                            .annotate(count=Count("id")) \
-                            .order_by("month")
-            result = [
-                {"month": entry["month"].strftime("%Y-%m"), "count": entry["count"]}
-                for entry in data
-            ]
+                            .annotate(count=Count("id"))
+
+            data_dict = {entry["month"].strftime("%Y-%m"): entry["count"] for entry in data}
+
+            # Fill missing months
+            result = []
+            for m in range(1, 13):
+                month_label = f"{year}-{m:02}"
+                result.append({
+                    "month": month_label,
+                    "count": data_dict.get(month_label, 0)
+                })
 
         elif mode == "weekly":
-            # Use current month if no month is provided
             try:
                 month = int(month) if month else now().month
                 if not (1 <= month <= 12):
@@ -282,31 +286,47 @@ class TicketSummaryAnalyticsAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid month. Must be between 1 and 12."}, status=400)
 
-            # Filter by specific month
             queryset = queryset.filter(created_at__month=month)
 
             data = queryset.annotate(week=TruncWeek("created_at")) \
-                            .values("week") \
-                            .annotate(count=Count("id")) \
-                            .order_by("week")
-            result = [
-                {"week": entry["week"].strftime("%Y-%m-%d"), "count": entry["count"]}
-                for entry in data
-            ]
+                           .values("week") \
+                           .annotate(count=Count("id"))
+
+            data_dict = {entry["week"].strftime("%Y-%m-%d"): entry["count"] for entry in data}
+
+            # Get all week start dates in the month
+            first_day = date(year, month, 1)
+            last_day = date(year, month, calendar.monthrange(year, month)[1])
+            current = first_day - timedelta(days=first_day.weekday())
+            result = []
+
+            while current <= last_day:
+                week_label = current.strftime("%Y-%m-%d")
+                result.append({
+                    "week": week_label,
+                    "count": data_dict.get(week_label, 0)
+                })
+                current += timedelta(weeks=1)
 
         else:
-            # Default: last 7 days
             today = now().date()
             last_7_days = today - timedelta(days=6)
+
             data = queryset.filter(created_at__date__range=(last_7_days, today)) \
-                            .annotate(day=TruncDay("created_at")) \
-                            .values("day") \
-                            .annotate(count=Count("id")) \
-                            .order_by("day")
-            result = [
-                {"day": entry["day"].strftime("%Y-%m-%d"), "count": entry["count"]}
-                for entry in data
-            ]
+                           .annotate(day=TruncDay("created_at")) \
+                           .values("day") \
+                           .annotate(count=Count("id"))
+
+            data_dict = {entry["day"].strftime("%Y-%m-%d"): entry["count"] for entry in data}
+
+            result = []
+            for i in range(7):
+                day = last_7_days + timedelta(days=i)
+                day_label = day.strftime("%Y-%m-%d")
+                result.append({
+                    "day": day_label,
+                    "count": data_dict.get(day_label, 0)
+                })
 
         return Response({
             "year": year,

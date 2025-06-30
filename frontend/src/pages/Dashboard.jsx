@@ -37,8 +37,16 @@ const Dashboard = () => {
           </div>
         </div> */}
 
-      <DataDisplaySection />
-      <ChartSection />
+      <div className="flex gap-4 justify-end">
+  <div className="flex-[1.2]">
+    <ChartSection />
+  </div>
+  <div className="flex-[2.8]">
+    <DataDisplaySection />
+  </div>
+</div>
+
+
     </div>
   );
 };

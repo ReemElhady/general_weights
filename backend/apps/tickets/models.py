@@ -1,9 +1,8 @@
 from django.db import models
 from apps.business.models import Item, Scale, Client
-# from apps.vehicles.models import Vehicle, Driver
-
-
 from apps.vehicles.models import Vehicle, Driver
+from django.contrib.contenttypes.models import ContentType
+
 
 Ticket_Types = [("IN", "التفريغ"), ("OUT", "المبيعات")]
 
@@ -58,3 +57,13 @@ class Ticket(models.Model):
             self.net_weight = abs(self.second_weight - self.first_weight)
 
         super().save(*args, **kwargs)
+
+
+class PrintTemplate(models.Model):
+    name = models.CharField(max_length=100)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)  # usually Ticket model
+    template_code = models.TextField(help_text="Use {{ object.ticket_number }} to access fields")
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name

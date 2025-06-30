@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ticket
+from .models import Ticket, PrintTemplate
 from apps.business.serializers import ClientSerializer, ItemSerializer, ScaleSerializer
 from apps.vehicles.serializers import VehicleSerializer, DriverSerializer
 
@@ -19,3 +19,8 @@ class TicketReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = '__all__'
+
+class PrintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrintTemplate
+        fields = ['id', 'name', 'is_default']

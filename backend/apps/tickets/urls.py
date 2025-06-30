@@ -12,6 +12,11 @@ urlpatterns = [
     # Analytics URLs
     path('analytics/yearly/', views.TicketYearlyAnalyticsAPIView.as_view(), name='ticket-yearly-analytics'),
     path("analytics/summary/", views.TicketSummaryAnalyticsAPIView.as_view(), name="ticket-summary-analytics"),
+    path("<int:ticket_id>/print/", views.TicketPrintPDFView.as_view()),
+
+    # print
+    path('print', views.PrintTemplateView.as_view(), name='print-template-list'),
+    path("print/<int:pk>/", views.PrintTemplateUpdate.as_view(), name="print-template-update"),
 
 
 ]

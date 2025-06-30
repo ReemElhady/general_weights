@@ -119,4 +119,85 @@ export const ticketAPI = {
 
         return true;
     },
+
+    exportOne: async (id) => {
+        const url = `${BASE_URL}/tickets/${id}/export/`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: authHeadersJSON(),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(parseErrorMessage(error));
+        }
+
+        // Trigger browser download
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `ticket_${id}.xlsx`;
+        link.click();
+    },
+
+    exportOnePDF: async (id) => {
+        const url = `${BASE_URL}/tickets/${id}/export-pdf/`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: authHeadersJSON(),
+        });
+    
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(parseErrorMessage(error));
+        }
+    
+        // Trigger browser download
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `ticket_${id}.pdf`;
+        link.click();
+    },
+    exportAllFilteredExcel: async (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        const url = `${BASE_URL}/tickets/export-excel/?${query}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: authHeadersJSON(),
+        });
+    
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(parseErrorMessage(error));
+        }
+    
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `filtered_tickets.xlsx`;
+        link.click();
+    },
+    
+    exportAllFilteredPDF: async (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        const url = `${BASE_URL}/tickets/export-pdf/?${query}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: authHeadersJSON(),
+        });
+    
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(parseErrorMessage(error));
+        }
+    
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `filtered_tickets.pdf`;
+        link.click();
+    },
+    
+    
 };

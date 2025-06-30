@@ -26,7 +26,7 @@ const yAxisLabels = ["200", "150", "100", "50", "0"];
 
 const DataDisplaySection = () => {
   return (
-    <section className="w-full max-w-[847px] mx-auto">
+    <section className="w-full">
       <div className="flex flex-col gap-5">
         {/* Top row with donut chart and status cards */}
         <div className="flex items-start gap-5 w-full">

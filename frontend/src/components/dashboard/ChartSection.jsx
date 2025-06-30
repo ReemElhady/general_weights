@@ -101,7 +101,7 @@ const tickets = [
 
 const ChartSection = () => {
   return (
-    <section className="w-full max-w-[425px]">
+    <section className="w-full max-w-[425px] m-0 p-0">
       <Card className="shadow-[0px_0px_1px_#0f224314,0px_8px_64px_#0e21430d]">
         <CardHeader className="pb-0 flex flex-row justify-between items-center">
           <CardTitle className="[font-family:'Rubik',Helvetica] font-semibold text-black-60 text-base [direction:rtl]">

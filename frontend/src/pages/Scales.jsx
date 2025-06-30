@@ -140,26 +140,46 @@ const Scales = () => {
     });
   };
   return (
-    <div className="p-6 space-y-6" ref={menuRef} >
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="pt-2 px-6 space-y-4" ref={menuRef} >
+      <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between gap-4">
         <button
           onClick={() => setShowModal(true)}
-          className="border border-[#5F4DEE] text-[#5F4DEE] px-4 py-2 rounded-lg hover:bg-[#5F4DEE] hover:text-white transition-colors"
+          className="w-[125px] h-[36px] px-[12px] py-[6px] border border-[#5F4DEE] text-[#5F4DEE] rounded-[6px] flex items-center justify-center gap-2 hover:bg-[#5F4DEE] hover:text-white transition-colors"
         >
           + إضافة ميزان
         </button>
-        <input
-          type="text"
-          placeholder="...البحث عن الموازين"
-          className="border border-gray-300 rounded-lg px-4 py-2 w-64"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPagination((prev) => ({ ...prev, page: 1 }));
-          }}
-        />
-      </div>
 
+        <div className="flex flex-col w-full max-w-xl">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setPagination((prev) => ({ ...prev, page: 1 }));
+                setSearchTerm(e.target.value);
+              }}
+              placeholder="... البحث عن الموازين"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5F4DEE] text-right"
+            />
+          </div>
+        </div>
+
+      </div>
       <div className="overflow-x-auto bg-white rounded-lg shadow min-h-[37vh]" ref={headerMenuRef}>
         <table className="min-w-full text-right" dir="rtl">
           <thead className="bg-gray-100 text-sm text-gray-700">

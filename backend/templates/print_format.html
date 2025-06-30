@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>تذكرة الوزن</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      direction: rtl;
+      font-size: 14px;
+      margin: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: center;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      width: 60px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .section {
+      margin: 10px 0;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="{{logo}}" class="logo" />
+    <div class="title">{{ company_name }}</div>
+    <div><strong>تذكرة وزن رقم</strong> {{ object.ticket_number }} - {{ ticket_type_ar }}</div>
+  </div>
+
+  <!-- Ticket Info -->
+  <div class="section">
+    <strong>اسم الميزان:</strong> {{ object.scale.name if object.scale else "" }}<br>
+    <strong>اسم العميل:</strong> {{ object.customer.name if object.customer else "" }}<br>
+    <strong>اسم السائق:</strong> {{ object.driver.name if object.driver else "" }}<br>
+    <strong>اسم الصنف:</strong> {{ object.item.name if object.item else "" }}<br>
+    <strong>رقم السيارة:</strong> {{ object.vehicle.plate_number if object.vehicle else "" }}<br>
+    <strong>رقم المقطورة:</strong> {{ object.trailer_plate_number or "" }}<br>
+    <strong>اسم المزرعة:</strong> {{ object.farm or "" }}
+  </div>
+
+  <!-- Weights Table -->
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>التاريخ</th>
+        <th>الوقت</th>
+        <th>الوزن (كجم)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>الوزن الاول</td>
+        <td>{{ first_date or "" }}</td>
+        <td>{{ first_time or ""}}</td>
+        <td>{{ object.first_weight or ""}}</td>
+      </tr>
+      <tr>
+        <td>الوزن الثاني</td>
+        <td>{{ second_date or "" }}</td>
+        <td>{{ second_time or "" }}</td>
+        <td>{{ object.second_weight or "" }}</td>
+      </tr>
+      <tr>
+        <td colspan="3"><strong>الوزن الصافي</strong></td>
+        <td><strong>{{ object.net_weight or "" }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Extra Info -->
+  <div class="section">
+    <strong>عدد الكراتين:</strong> {{ object.boxes_number or 0 }}<br>
+    <strong>عدد الطيور:</strong> {{ object.birds_number or 0 }}<br>
+    <strong>نسبة الغاز:</strong> {{ object.gas_ratio or 0 }}
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>مسؤول الميزان: _______________________</p>
+    <p>ملاحظات: {{ object.notes or 'لا توجد' }}</p>
+    <p>تاريخ الطباعة: {{ print_date }}</p>
+  </div>
+
+</body>
+
+</html>

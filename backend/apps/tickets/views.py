@@ -2,10 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Ticket
-from .serializers import TicketSerializer, TicketReadSerializer
+from .serializers import TicketSerializer, TicketReadSerializer, PrintSerializer
 from django.shortcuts import get_object_or_404
 from apps.vehicles.models import Vehicle, BlockedVehicle, Driver
 from apps.company.models import SystemSettings, EmailSettings
+from apps.company.serializers import SystemSettingsSerializer
 from django.core.mail import EmailMessage
 from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,7 +18,13 @@ from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
 from django.db.models import Count
 from datetime import datetime, timedelta, date
 import calendar
-
+from .models import Ticket, PrintTemplate
+from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
+from weasyprint import HTML
+from apps.utils.render_template import render_template
+from rest_framework.permissions import AllowAny
+from apps.utils.parse_datetime import parse_datetime_str
 
 class TicketFirstWeightAPIView(APIView):
     def post(self, request):
@@ -334,3 +341,85 @@ class TicketSummaryAnalyticsAPIView(APIView):
             "month": month if mode == "weekly" else None,
             "data": result
         })
+
+
+
+class PrintTemplateView(APIView):
+    def get(self,request):
+        print_templates = PrintTemplate.objects.all()
+        serializer = PrintSerializer(print_templates , many = True)
+        return Response(serializer.data)
+
+
+class PrintTemplateUpdate(APIView):
+    def put(self, request, pk):
+        # Get the current template to be made default
+        print_template = get_object_or_404(PrintTemplate, pk=pk)
+
+        # Disable all other templates of the same model (same content_type)
+        PrintTemplate.objects.filter(
+            content_type=print_template.content_type
+        ).exclude(pk=pk).update(is_default=False)
+
+        # Set current one as default if not already
+        if not print_template.is_default:
+            print_template.is_default = True
+            print_template.save()
+
+        serializer = PrintSerializer(print_template)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TicketPrintPDFView(APIView):
+    permission_classes = [AllowAny] 
+
+    def get(self, request, ticket_id):
+        template_id = request.GET.get("template_id")
+
+        # Get the ticket
+        ticket = get_object_or_404(Ticket, pk=ticket_id)
+
+        # Get the template: specific one or fallback to default
+        if template_id:
+            template = get_object_or_404(PrintTemplate, pk=template_id)
+        else:
+            ct = ContentType.objects.get_for_model(Ticket)
+            template = get_object_or_404(
+                PrintTemplate, content_type=ct, is_default=True
+            )
+
+        systemsettings = SystemSettings.objects.all()
+        serializer = SystemSettingsSerializer(systemsettings,many = True)
+
+        logo = serializer.data[0]['company_logo']
+        absolute_logo_url = request.build_absolute_uri(logo)
+
+        first_date, first_time = parse_datetime_str(ticket.first_weight_date)
+        second_date, second_time = parse_datetime_str(ticket.second_weight_date)
+
+        TYPE_LABELS = {
+            "IN": "مبيعات",
+            "OUT": "تفريغ",
+        }
+
+        ticket_type_ar = TYPE_LABELS.get(ticket.ticket_type, ticket.ticket_type)
+
+
+        # Render HTML from template
+        html = render_template(template.template_code, {
+            "object": ticket,
+            "company_name": serializer.data[0]['company_name'],
+            "logo": absolute_logo_url,
+            "ticket_type_ar": ticket_type_ar,
+            "first_date": first_date,
+            "first_time": first_time,
+            "second_date": second_date,
+            "second_time": second_time,
+        })
+        # Generate PDF from HTML
+        pdf_file = HTML(string=html).write_pdf()
+
+        # Return as PDF response
+        response = HttpResponse(pdf_file, content_type="application/pdf")
+        response["Content-Disposition"] = f'filename="ticket_{ticket_id}.pdf"'
+        return response

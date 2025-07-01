@@ -3,7 +3,7 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const getSystemSettings = async (token) => {
-  const res = await fetch(`${BASE_URL}/systemsettings/`, {
+  const res = await fetch(`${BASE_URL}/company/systemsettings/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("فشل في تحميل إعدادات النظام");
@@ -14,6 +14,7 @@ export const getEmailSettings = async (token) => {
   const res = await fetch(`${BASE_URL}/emailsettings/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log(res)
   if (!res.ok) throw new Error("فشل في تحميل إعدادات البريد الإلكتروني");
   return res.json();
 };

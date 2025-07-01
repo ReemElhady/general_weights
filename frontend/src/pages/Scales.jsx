@@ -5,6 +5,9 @@ import EditScalePage from "../components/scales/EditScalePage";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 const DEFAULT_PAGE_SIZE = parseInt(import.meta.env.VITE_DEFAULT_PAGE_SIZE || "10", 10);
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
 
 const Scales = () => {
   const [showModal, setShowModal] = useState(false);
@@ -46,7 +49,7 @@ const Scales = () => {
 
   const fetchScales = () => {
     fetch(
-      `http://localhost:8000/api/v1/business/scales/?search=${searchTerm}&page=${pagination.page}&ordering=${ordering}&page_size=${pageSize}`,
+      `${BASE_URL}/business/scales/?search=${searchTerm}&page=${pagination.page}&ordering=${ordering}&page_size=${pageSize}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -113,7 +116,7 @@ const Scales = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v1/business/scales/${id}/`,
+        `${BASE_URL}/business/scales/${id}/`,
         {
           method: "DELETE",
           headers: {
@@ -239,7 +242,7 @@ const Scales = () => {
                         if (window.confirm("هل أنت متأكد من حذف العناصر المحددة؟")) {
                           Promise.all(
                             selectedScales.map((id) =>
-                              fetch(`http://localhost:8000/api/v1/business/scales/${id}/`, {
+                              fetch(`${BASE_URL}/business/scales/${id}/`, {
                                 method: "DELETE",
                                 headers: {
                                   Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -7,6 +7,10 @@ import { vehicleAPI } from "../utils/vehicle";
 import LiveWeightPage from "./LiveWeightPage";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
+
 const FirstWeight = () => {
     const [vehicleList, setVehicleList] = useState([]);
     const [vehicleSearch, setVehicleSearch] = useState("");
@@ -160,7 +164,7 @@ const FirstWeight = () => {
     useEffect(() => {
         if (!selectedScale) return;
 
-        const socket = new WebSocket("ws://localhost:8000/ws/scale/");
+        const socket = new WebSocket(`ws://${SOCKET_URL}/ws/scale/`);
 
         socket.onopen = () => {
             socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));

@@ -4,6 +4,11 @@ import { ticketAPI } from "../utils/ticket";
 import { useToast } from "../components/ui/toast";
 import TicketDetail from "../components/tickets/ticketDetails";
 import { useNavigate } from "react-router-dom";
+import { Printer } from "lucide-react";
+
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 const Tickets = () => {
   const { success, error } = useToast();
@@ -107,8 +112,11 @@ const Tickets = () => {
     }
   };
 
-  const handlePrint = (id) => {
+  const handlePrint = async (id) => {
     console.log("Printing ticket:", id);
+
+    const url = `${BASE_URL}/tickets/${id}/print/`;
+    window.open(url, "_blank"); // Open in new tab
   };
 
   const toggleMenu = (id) => {
@@ -348,6 +356,7 @@ const Tickets = () => {
               <th className="py-3 px-4 text-center w-24">الحالة</th>
               <th className="py-2 px-3 text-center"></th>
               <th className="py-1 px-1 text-center"></th>
+              <th className="py-1 px-1 text-center"></th>
             </tr>
           </thead>
           <tbody className="text-sm">
@@ -397,6 +406,17 @@ const Tickets = () => {
                       الوزن الثاني
                     </button>
                   )}
+                </td>
+                <td className="py-2 px-4 text-center">
+                  <button
+                    className="px-4 py-1 bg-white-500 text-black rounded text-xs"
+                    // className="px-4 py-1 bg-green-500 text-white rounded text-xs"
+
+                    onClick={() => handlePrint(ticket.id)}
+                  >
+                      <Printer className="w-4 h-4" />
+
+                  </button>
                 </td>
                 <td className="py-2 px-4 relative text-center">
                   <div className="relative inline-block text-left">
@@ -453,7 +473,7 @@ const Tickets = () => {
               className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 text-center"
               onClick={() => handlePrint(activeMenuTicketId)}
             >
-              طباعة
+              🖨️ طباعة
             </button>
             <button
               className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-100 text-center"
@@ -461,7 +481,7 @@ const Tickets = () => {
             >
               حذف
             </button>
-            <button
+            {/* <button
               className="w-full px-4 py-2 text-sm text-green-600 hover:bg-green-100 text-center"
               onClick={() => ticketAPI.exportOne(activeMenuTicketId)}
             >
@@ -472,7 +492,7 @@ const Tickets = () => {
               onClick={() => ticketAPI.exportOnePDF(activeMenuTicketId)}
             >
               Export as PDF
-            </button>
+            </button> */}
 
           </div>
         )}

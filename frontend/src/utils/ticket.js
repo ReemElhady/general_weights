@@ -199,5 +199,17 @@ export const ticketAPI = {
         link.click();
     },
     
-    
+    print: async (id) => {
+        const response = await fetch(`${BASE_URL}/tickets/${id}/print/`, {
+            method: 'GET',
+            headers: authHeadersJSON(),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(parseErrorMessage(error));
+        }
+
+        return response.json();
+    },
 };

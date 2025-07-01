@@ -252,6 +252,8 @@ class ScaleConsumer(AsyncWebsocketConsumer):
         import serial.tools.list_ports
 
         ports = [port.device for port in serial.tools.list_ports.comports()]
+
+        print("ports", ports)
         if self.scale.serial_port not in ports:
             await self.send_error("⚠️ لم يتم العثور على المنفذ المتصل بالميزان")
             return

@@ -1,11 +1,16 @@
+// src/pages/Settings.jsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useToast } from "../components/ui/toast";
+import {
+  getSystemSettings,
+  getEmailSettings,
+  saveSystemSettings,
+  saveEmailSettings,
+} from "../utils/settings";
 
 const Settings = () => {
   const { success, error } = useToast();
 
-  // System Settings
   const [companyName, setCompanyName] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [startTicketNumber, setStartTicketNumber] = useState("");
@@ -17,7 +22,6 @@ const Settings = () => {
   const [companyLogoUrl, setCompanyLogoUrl] = useState("");
   const [systemId, setSystemId] = useState(null);
 
-  // Email Settings
   const [emailHost, setEmailHost] = useState("smtp.gmail.com");
   const [emailPort, setEmailPort] = useState(587);
   const [emailHostUser, setEmailHostUser] = useState("");
@@ -31,46 +35,34 @@ const Settings = () => {
       try {
         const token = localStorage.getItem("token");
 
-        // Fetch system settings
-        const resSystem = await fetch("http://localhost:8000/api/v1/company/systemsettings/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (resSystem.ok) {
-          const data = await resSystem.json();
-          const system = Array.isArray(data) ? data[0] : data;
-          if (system) {
-            setSystemId(system.id);
-            setCompanyName(system.company_name || "");
-            setPaymentType(system.payment_type || "");
-            setStartTicketNumber(system.start_ticket_number || "");
-            setWeightMethod(system.weighing_method || "");
-            setWeightUnit(system.weighing_unit || "");
-            setManipulationThreshold(system.manipulation_threshold || "");
-            setEnableManipulation(system.manipulation_threshold > 0);
-            setCompanyLogoUrl(system.company_logo ? `http://localhost:8000${system.company_logo}` : "");
-          }
+        // system settings
+        const dataSystem = await getSystemSettings(token);
+        const system = Array.isArray(dataSystem) ? dataSystem[0] : dataSystem;
+        if (system) {
+          setSystemId(system.id);
+          setCompanyName(system.company_name || "");
+          setPaymentType(system.payment_type || "");
+          setStartTicketNumber(system.start_ticket_number || "");
+          setWeightMethod(system.weighing_method || "");
+          setWeightUnit(system.weighing_unit || "");
+          setManipulationThreshold(system.manipulation_threshold || "");
+          setEnableManipulation(system.manipulation_threshold > 0);
+          setCompanyLogoUrl(system.company_logo ? `http://localhost:8000${system.company_logo}` : "");
         }
 
-        // Fetch email settings
-        const resEmail = await fetch("http://localhost:8000/api/v1/company/emailsettings/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (resEmail.ok) {
-          const data = await resEmail.json();
-          const email = Array.isArray(data) ? data[0] : data;
-          if (email) {
-            setEmailId(email.id);
-            setEmailHost(email.email_host || "");
-            setEmailPort(email.email_port || 587);
-            setEmailHostUser(email.email_host_user || "");
-            setRecipientEmail(email.recipient_email || "");
-            setUseTls(email.use_tls ?? true);
-          }
+        // email settings
+        const dataEmail = await getEmailSettings(token);
+        const email = Array.isArray(dataEmail) ? dataEmail[0] : dataEmail;
+        if (email) {
+          setEmailId(email.id);
+          setEmailHost(email.email_host || "");
+          setEmailPort(email.email_port || 587);
+          setEmailHostUser(email.email_host_user || "");
+          setRecipientEmail(email.recipient_email || "");
+          setUseTls(email.use_tls ?? true);
         }
-      } catch (error) {
-        console.error("❌ فشل تحميل البيانات:", error);
+      } catch (err) {
+        console.error("❌ فشل تحميل البيانات:", err.message);
       }
     };
 
@@ -82,7 +74,6 @@ const Settings = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // إعدادات النظام
       const systemForm = new FormData();
       systemForm.append("company_name", companyName);
       systemForm.append("payment_type", paymentType);
@@ -92,23 +83,8 @@ const Settings = () => {
       systemForm.append("manipulation_threshold", enableManipulation ? manipulationThreshold : 0);
       if (companyLogo) systemForm.append("company_logo", companyLogo);
 
-      if (systemId) {
-        await axios.put(`http://localhost:8000/api/v1/company/systemsettings/${systemId}/`, systemForm, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } else {
-        await axios.post("http://localhost:8000/api/v1/company/systemsettings/", systemForm, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
+      await saveSystemSettings(token, systemForm, systemId);
 
-      // إعدادات البريد الإلكتروني
       const emailData = {
         email_host: emailHost,
         email_port: emailPort,
@@ -118,30 +94,12 @@ const Settings = () => {
         use_tls: useTls,
       };
 
-      if (emailId) {
-        await fetch(`http://localhost:8000/api/v1/company/emailsettings/${emailId}/`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(emailData),
-        });
-      } else {
-        await fetch("http://localhost:8000/api/v1/company/emailsettings/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(emailData),
-        });
-      }
+      await saveEmailSettings(token, emailData, emailId);
 
-      success("", "تم حفظ الإعدادات بنجاح"); // ✅ هنا استخدمنا التوست بدل alert
+      success("", "تم حفظ الإعدادات بنجاح");
     } catch (err) {
-      console.error("❌ حدث خطأ أثناء الحفظ:", err.response?.data || err.message);
-      error(err.message, "حدث خطأ أثناء الحفظ"); // ✅ وهنا كمان بدل alert
+      console.error("❌ خطأ أثناء الحفظ:", err.message);
+      error(err.message, "حدث خطأ أثناء الحفظ");
     }
   };
 

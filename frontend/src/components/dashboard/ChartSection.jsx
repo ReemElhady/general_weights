@@ -1,105 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeftIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-
-// Sample data based on the UI
-const iconTicket = "/ticket-1.png"; // Default icon for tickets
-
-const tickets = [
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "في انتظار الوزن الاول",
-      type: "pending",
-    },
-    weights: {
-      first: "-",
-      second: "-",
-      third: "-",
-    },
-    iconSrc: iconTicket,
-  },
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "في انتظار الوزن الثاني",
-      type: "pending",
-    },
-    weights: {
-      first: "12,000",
-      second: "-",
-      third: "-",
-    },
-    iconSrc: iconTicket,
-  },
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "مكتملة",
-      type: "completed",
-    },
-    weights: {
-      first: "12,000",
-      second: "28,000",
-      third: "16,000",
-    },
-    iconSrc: iconTicket,
-  },
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "مكتملة",
-      type: "completed",
-    },
-    weights: {
-      first: "12,000",
-      second: "28,000",
-      third: "16,000",
-    },
-    iconSrc: iconTicket,
-  },
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "مكتملة",
-      type: "completed",
-    },
-    weights: {
-      first: "12,000",
-      second: "28,000",
-      third: "16,000",
-    },
-    iconSrc: iconTicket,
-  },
-  {
-    id: "ع ق ل 3745",
-    date: "15 Mar 2025, 12:47 PM",
-    customerName: "احمد علي السيد",
-    status: {
-      text: "مكتملة",
-      type: "completed",
-    },
-    weights: {
-      first: "12,000",
-      second: "28,000",
-      third: "16,000",
-    },
-    iconSrc: iconTicket,
-  },
-];
+import { fetchTickets } from "../../utils/dashboard"; // استوردها من utils
 
 const ChartSection = () => {
+  const [tickets, setTickets] = useState([]);
+
+  useEffect(() => {
+    const loadTickets = async () => {
+      const data = await fetchTickets();
+      setTickets(data);
+    };
+    loadTickets();
+  }, []);
+
   return (
     <section className="w-full max-w-[425px] m-0 p-0">
       <Card className="shadow-[0px_0px_1px_#0f224314,0px_8px_64px_#0e21430d]">
@@ -108,46 +23,44 @@ const ChartSection = () => {
             التذاكر الأخيرة
           </CardTitle>
           <a
-            href="#"
+            href="/tickets"
             className="[font-family:'Rubik',Helvetica] font-normal text-indigo-500 text-xs underline [direction:rtl]"
           >
             عرض المزيد
           </a>
+
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-3">
-            {tickets.map((ticket, index) => (
-              <div
-                key={index}
-                className="flex flex-col gap-2.5 pb-3 border-b border-[#f1f2f8]"
-              >
+            {tickets.map((ticket) => (
+              <div key={ticket.id} className="flex flex-col gap-2.5 pb-3 border-b border-[#f1f2f8]">
                 <div className="flex items-start gap-3.5 w-full">
                   <div className="flex flex-col gap-2.5 flex-1">
                     <div className="flex items-start justify-between w-full">
                       <div className="inline-flex items-start">
                         <span className="text-black-20 text-xs [font-family:'Rubik',Helvetica] font-normal">
-                          {ticket.date}
+                          {new Date(ticket.created_at).toLocaleString('ar-EG')}
                         </span>
                       </div>
                       <div className="[font-family:'Rubik',Helvetica] font-normal text-black-60 text-xs text-left [direction:rtl]">
-                        {ticket.customerName}
+                        {ticket.customer?.name}
                       </div>
                     </div>
                     <div className="flex items-end justify-between w-full">
                       <Badge
                         className={`h-5 px-2 py-px justify-end ${
-                          ticket.status.type === "pending"
-                            ? "bg-indigo-0 text-indigo-500"
-                            : "bg-[#e0fcee] text-[#147f49]"
+                          ticket.is_completed
+                            ? "bg-[#e0fcee] text-[#147f49]"
+                            : "bg-indigo-0 text-indigo-500"
                         }`}
                       >
                         <span className="[font-family:'Rubik',Helvetica] font-medium text-[11px] tracking-[0.33px] leading-[13.2px] [direction:rtl]">
-                          {ticket.status.text}
+                          {ticket.is_completed ? "مكتملة" : ticket.second_weight ? "في انتظار الوزن الثاني" : "في انتظار الوزن الاول"}
                         </span>
                       </Badge>
                       <div className="inline-flex items-start">
                         <span className="[font-family:'Rubik',Helvetica] font-medium text-black-80 text-base text-left [direction:rtl]">
-                          {ticket.id}
+                          {ticket.vehicle?.plate}
                         </span>
                       </div>
                     </div>
@@ -156,7 +69,7 @@ const ChartSection = () => {
                     <img
                       className="absolute top-[13px] left-[13px] w-6 h-6"
                       alt="Ticket"
-                      src={ticket.iconSrc}
+                      src="/ticket-1.png"
                     />
                   </div>
                 </div>
@@ -164,19 +77,19 @@ const ChartSection = () => {
                   <div className="flex items-center gap-[7px] w-full">
                     <div className="flex w-[98px] justify-center bg-gray-50 items-center px-2 py-px rounded">
                       <div className="[font-family:'Inter',Helvetica] font-medium text-gray-700 text-xs tracking-[0.36px] leading-[18px]">
-                        {ticket.weights.third}
+                        {ticket.net_weight || "-"}
                       </div>
                     </div>
                     <ChevronLeftIcon className="w-4 h-4" />
                     <div className="flex w-[97px] justify-center bg-gray-50 items-center px-2 py-px rounded">
                       <div className="[font-family:'Inter',Helvetica] font-medium text-gray-700 text-xs tracking-[0.36px] leading-[18px]">
-                        {ticket.weights.second}
+                        {ticket.second_weight || "-"}
                       </div>
                     </div>
                     <ChevronLeftIcon className="w-4 h-4" />
                     <div className="flex w-[97px] justify-center bg-gray-50 items-center px-2 py-px rounded">
                       <div className="[font-family:'Inter',Helvetica] font-medium text-gray-700 text-xs tracking-[0.36px] leading-[18px]">
-                        {ticket.weights.first}
+                        {ticket.first_weight || "-"}
                       </div>
                     </div>
                   </div>

@@ -468,6 +468,7 @@ dependencies = [
     { name = "rest-framework-simplejwt" },
     { name = "weasyprint" },
     { name = "whitenoise" },
+    { name = "xlsxwriter" },
 ]
 
 [package.metadata]
@@ -491,6 +492,7 @@ requires-dist = [
     { name = "rest-framework-simplejwt", specifier = ">=0.0.2" },
     { name = "weasyprint", specifier = ">=65.1" },
     { name = "whitenoise", specifier = ">=6.9.0" },
+    { name = "xlsxwriter", specifier = ">=3.2.5" },
 ]
 
 [[package]]
@@ -1240,6 +1242,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b9/cf/c15c2f21aee6b22a9f6fc9be3f7e477e2442ec22848273db7f4eb73d6162/whitenoise-6.9.0.tar.gz", hash = "sha256:8c4a7c9d384694990c26f3047e118c691557481d624f069b7f7752a2f735d609", size = 25920 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/64/b2/2ce9263149fbde9701d352bda24ea1362c154e196d2fda2201f18fc585d7/whitenoise-6.9.0-py3-none-any.whl", hash = "sha256:c8a489049b7ee9889617bb4c274a153f3d979e8f51d2efd0f5b403caf41c57df", size = 20161 },
+]
+
+[[package]]
+name = "xlsxwriter"
+version = "3.2.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/47/7704bac42ac6fe1710ae099b70e6a1e68ed173ef14792b647808c357da43/xlsxwriter-3.2.5.tar.gz", hash = "sha256:7e88469d607cdc920151c0ab3ce9cf1a83992d4b7bc730c5ffdd1a12115a7dbe", size = 213306 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fa/34/a22e6664211f0c8879521328000bdcae9bf6dbafa94a923e531f6d5b3f73/xlsxwriter-3.2.5-py3-none-any.whl", hash = "sha256:4f4824234e1eaf9d95df9a8fe974585ff91d0f5e3d3f12ace5b71e443c1c6abd", size = 172347 },
 ]
 
 [[package]]

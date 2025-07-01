@@ -1,0 +1,1917 @@
+{
+	"info": {
+		"_postman_id": "fd0c8b51-517e-403c-8b34-056c137a28de",
+		"name": "GeneralWeighing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45994893",
+		"_collection_link": "https://cloudy-sunset-3113.postman.co/workspace/MillenniumProjects~f34f33dc-2e3d-4b04-a6fc-49d9033a87a7/collection/9284266-fd0c8b51-517e-403c-8b34-056c137a28de?action=share&source=collection_link&creator=45994893"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Log in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the JSON response",
+									"const jsonResponse = pm.response.json();",
+									"console.log(jsonResponse)",
+									"",
+									"// Check if the token exists in the response",
+									"if (jsonResponse.access) {",
+									"    // Set the token in the environment variable",
+									"    pm.environment.set(\"authToken\", jsonResponse.access);",
+									"",
+									"    console.log(\"Token saved: \", jsonResponse.access);",
+									"} else {",
+									"    console.error(\"Token not found in the response\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"User@123\",\n//   \"email\": \"user@gmail.com\"\n  \"email\": \"admin@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Test\",\n  \"last_name\": \"Test\",\n  \"password1\": \"User@123\",\n  \"password2\": \"User@123\",\n  \"email\": \"user@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "current user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Test\",\n  \"last_name\": \"Test 2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Drivers",
+			"item": [
+				{
+					"name": "List Drivers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/drivers/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"drivers",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "1",
+									"description": "default = 15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "LIC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"description": "['id', 'name', 'license', 'license_expiry']",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Driver",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Tarek Shaaban\",\n  \"license\": \"LIC12345678901\",\n  \"license_category\": \"Heavy\",\n  \"license_expiry\": \"2026-12-31\",\n  \"notes\": \"نقل ثقيل\",\n  \"vehicle_ids\": [2, 3]  // Vehicle IDs to assign optional\n\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/drivers/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"drivers",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Driver",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ahmed Khaled\",\n  \"license\": \"LIC12345678901\",\n  \"license_category\": \"Heavy\",\n  \"license_expiry\": \"2026-12-31\",\n  \"notes\": \"نقل ثقيل\",\n  \"vehicle_ids\": [2, 3]  // Vehicle IDs to assign optional\n\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/drivers/5/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"drivers",
+								"5",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Driver Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/drivers/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"drivers",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Driver",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ahmed Khaled\",\n  \"license\": \"LIC12345678901\",\n  \"license_category\": \"Heavy\",\n  \"license_expiry\": \"2026-12-31\",\n  \"notes\": \"نقل ثقيل\"\n}\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/drivers/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"drivers",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vehicles",
+			"item": [
+				{
+					"name": "List Vehicles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/?search=KOC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "KOC"
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"description": "['id', 'plate', 'license', 'chassis_number', 'last_inspection_date', 'total_weight_operations']",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"plate\": \"MNO456\",\n  \"license\": \"KOC98765009200\",\n  \"license_expiry\": \"2026-12-31\",\n  \"license_weight\": 5000.000,\n//   \"first_weight\": ,\n  \"notes\": \"First registration\",\n  \"chassis_number\": \"CHS456789ABC123\",\n  \"model\": \"Toyota Hilux\",\n  \"year\": \"2025\",\n  \"type\": \"Pickup Truck\",\n  \"capacity\": 3000.50,\n  \"last_inspection_date\": \"2025-03-15\",\n  \"driver_ids\": [1, 2] // optional prefer do that using driver api\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Vehicle Details",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vehicle",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/4/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"4",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vehicle",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"plate\": \"WNO456\",\n  \"license\": \"KOC98765009200\",\n  \"license_weight\": 5000.000,\n  \"first_weight\": 1200.000,\n  \"notes\": \"First registration\",\n  \"chassis_number\": \"CHS456789ABC123\",\n  \"model\": \"Toyota Hilux\",\n  \"type\": \"Pickup Truck\",\n  \"capacity\": 3000.50,\n  \"last_inspection_date\": \"2025-03-15\",\n  \"total_weight_operations\": 0,\n  \"status\": \"active\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Scales",
+			"item": [
+				{
+					"name": "List Scales",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/scales/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"scales",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "scale",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"description": "['id', 'name', 'manufacturer', 'model', 'connection_type']",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get scale-stats",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/scales/analytics/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"scales",
+								"analytics",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Scale",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n// // // fields for TCP option\r\n{\r\n  \"name\": \"scale-2\",\r\n  \"manufacturer\": \"string\",     //optional\r\n  \"model\": \"string\",            //optional\r\n  \"front_camera_ip\": \"string\",  //optional\r\n  \"front_camera_port\": \"string\",//optional\r\n  \"rear_camera_ip\": \"string\",   //optional\r\n  \"rear_camera_port\": \"string\", //optional\r\n  \"status\": true,\r\n  \"connection_type\": \"tcp\",\r\n  \"ip\": \"192.168.1.50\",\r\n  \"port\": 9999,\r\n  \"delay\": 1,\r\n  \"bits_number\": 5,\r\n  \"weight_start_index\": 2147483647,  //optional\r\n  \"weight_end_index\": 2147483647     //optional\r\n}\r\n\r\n\r\n\r\n// // fields for serial option\r\n// {\r\n//   \"name\": \"scale-1\",\r\n//   \"manufacturer\": \"string\",     //optional\r\n//   \"model\": \"string\",            //optional\r\n//   \"front_camera_ip\": \"string\",  //optional\r\n//   \"front_camera_port\": \"string\",//optional\r\n//   \"rear_camera_ip\": \"string\",   //optional\r\n//   \"rear_camera_port\": \"string\", //optional\r\n//   \"status\": true,\r\n//   \"connection_type\": \"serial\",\r\n//   \"delay\": 1,\r\n//   \"bits_number\": 5,\r\n//   \"serial_port\": \"COM1\",\r\n//   \"baudrate\": 9600,\r\n//   \"parity\": \"none\",\r\n//  \"stop_bits\": 1,\r\n//   \"flow_control\": \"none\",\r\n//   \"weight_start_index\": 3,   //optional\r\n//   \"weight_end_index\": 10     //optional\r\n// }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/scales/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"scales",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Scale",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"scale-1\",\r\n  \"manufacturer\": \"string\",     //optional\r\n  \"model\": \"string\",            //optional\r\n  \"front_camera_ip\": \"192.168.1.1\",  //optional\r\n  \"front_camera_port\": \"5555\",//optional\r\n  \"rear_camera_ip\": \"192.168.1.2\",   //optional\r\n  \"rear_camera_port\": \"4444\", //optional\r\n  \"status\": true,\r\n  \"connection_type\": \"serial\",\r\n//   \"ip\": \"string\",\r\n//   \"port\": 2147483647,\r\n  \"delay\": 1,\r\n  \"bits_number\": 5,\r\n  \"serial_port\": \"COM1\",\r\n  \"baudrate\": 110,\r\n  \"parity\": \"none\",\r\n  \"stop_bits\": 1,\r\n  \"flow_control\": \"none\",\r\n  \"weight_start_index\": 2147483647,\r\n  \"weight_end_index\": 2147483647\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/scales/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"scales",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Scale",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"scale-1\",\r\n  \"manufacturer\": \"string\",     //optional\r\n  \"model\": \"string\",            //optional\r\n  \"front_camera_ip\": \"192.168.1.1\",  //optional\r\n  \"front_camera_port\": \"5555\",//optional\r\n  \"rear_camera_ip\": \"192.168.1.2\",   //optional\r\n  \"rear_camera_port\": \"4444\", //optional\r\n  \"status\": true,\r\n  \"connection_type\": \"serial\",\r\n  \"ip\": \"string\",\r\n  \"port\": 2147483647,\r\n  \"delay\": 1,\r\n  \"bits_number\": 5,\r\n  \"serial_port\": \"COM1\",\r\n  \"baudrate\": 110,\r\n  \"parity\": \"none\",\r\n  \"stop_bits\": 1,\r\n  \"flow_control\": \"none\",\r\n  \"weight_start_index\": 2147483647,\r\n  \"weight_end_index\": 2147483647\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/scales/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"scales",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blocked Vehicles",
+			"item": [
+				{
+					"name": "List Blocked Vehicles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/blocked/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"blocked",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "KOC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unblock Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUxMDE4NDEzLCJpYXQiOjE3NTA1ODY0MTMsImp0aSI6ImI5MDM5ZmNhNDFjNzQzNzE5ZDNiYTEwY2E2OTZmMDM1IiwidXNlcl9pZCI6Mn0.oYf4Af4oO8aBXDUjZNms3PmRJmS_CZynL8ziW0TkKfA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"unblock_reason\": \"Security review passed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicles/3/unblock/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"3",
+								"unblock",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clients",
+			"item": [
+				{
+					"name": "List Clients",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/clients/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"clients",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "3",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "ABC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"description": "['id', 'name', 'joined_at']",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Client",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"ABC Corporation\",\n  \"manager\": \"Mark David\",\n  \"phone\": \"+1234567890\",\n  \"email\": \"mark@abc.com\",\n  \"status\": \"active\",\n  \"notes\": \"Notes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/clients/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"clients",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Client",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"ABC Corporation\",\n  \"manager\": \"Mark Michel\",\n  \"phone\": \"+1234567890\",\n  \"email\": \"mark@abc.com\",\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/clients/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"clients",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Client",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/clients/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"clients",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Items",
+			"item": [
+				{
+					"name": "List Items",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/items/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"items",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Item",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"ذرة خضراه\",\n  \"sector\": \"زراعة\",\n  \"type\": \"حي\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/items/?ordering=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"items",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "",
+									"description": "['id', 'name', 'sector', 'type']"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Item",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"ذرة صفراء\",\n  \"sector\": \"زراعة\",\n  \"type\": \"حي\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/items/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"items",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Item",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/business/items/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"business",
+								"items",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Email Settings",
+			"item": [
+				{
+					"name": "List Email Settings",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/emailsettings/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"emailsettings",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Email Settings",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email_host\": \"smtp.gmail.com\",\r\n  \"email_port\": 587,\r\n  \"email_host_user\": \"hoda3526@gmail.com\",\r\n  \"email_host_password\": \"efhd apzs xggo kmik\",\r\n  \"recipient_email\": \"shahdhesham1605@gmail.com\",\r\n  \"use_tls\": true\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/emailsettings/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"emailsettings",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Email Settings Details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email_host\": \"smtp.gmail.com\",\r\n  \"email_port\": 587,\r\n  \"email_host_user\": \"hoda3526@gmail.com\",\r\n  \"email_host_password\": \"your_email_password\",\r\n  \"recipient_email\": \"recipient@example.com\",\r\n  \"use_tls\": true\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/emailsettings/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"emailsettings",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Email Setting",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email_host\": \"smtp.gmail.com\",\r\n  \"email_port\": 587,\r\n  \"email_host_user\": \"hoda3526@gmail.com\",\r\n  \"email_host_password\": \"efhd apzs xggo kmik\",\r\n  \"recipient_email\": \"hoda3526@gmail.com\",\r\n  \"use_tls\": true\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/emailsettings/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"emailsettings",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Email Setting",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email_host\": \"smtp.gmail.com\",\r\n  \"email_port\": 587,\r\n  \"email_host_user\": \"hoda3526@gmail.com\",\r\n  \"email_host_password\": \"efhd apzs xggo kmik\",\r\n  \"recipient_email\": \"mahmoudabozahra151@gmail.com\",\r\n  \"use_tls\": true\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/emailsettings/3/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"emailsettings",
+								"3",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SystemSettings",
+			"item": [
+				{
+					"name": "List System Settings",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"company_name\": \"شركة الميزان\",\r\n  \"manipulation_threshold\": 50,\r\n  \"start_ticket_number\": \"T0-01\",\r\n  \"payment_type\": \"نقدي\",\r\n  \"weighing_method\": \"manual\",\r\n  \"weighing_unit\": \"kg\"\r\n}\r\n\r\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/systemsettings/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"systemsettings",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add  System Settings",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"company_name\": \"شركة الميزان\",\r\n  \"manipulation_threshold\": 50,\r\n  \"start_ticket_number\": \"T0-01\",\r\n  \"payment_type\": \"نقدي\",\r\n  \"weighing_method\": \"manual\",\r\n  \"weighing_unit\": \"kg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/systemsettings/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"systemsettings",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "System Setting Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/systemsettings/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"systemsettings",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update System Setting",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "company_logo",
+									"type": "file",
+									"src": "7oFVvX0kn/Screenshot 2025-04-30 at 12.36.58 AM.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/systemsettings/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"systemsettings",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete System Setting",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/company/systemsettings/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"company",
+								"systemsettings",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tickets",
+			"item": [
+				{
+					"name": "First weight Ticket",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scale\": 1,\n  \"vehicle\": 1,\n  \"driver\": 1,\n  \"customer\": 1,\n  \"item\": 1,\n  \"ticket_type\": \"OUT\",\n  \"first_weight\": 16600.750,\n  \"first_weight_date\": \"2025-06-22T14:25:00\",\n  \"trailer_first_weight\": 2500.000,\n  \"trailer_plate_number\": \"XYZ1234\",\n  \"farm\": \"Green Farm\",\n  \"boxes_number\": 42,\n  \"birds_number\": 980,\n  \"gas_ratio\": 0.026,\n  \"notes\": \"Morning entry\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/first-weight/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"first-weight",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Tickets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "MNO",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-created_at",
+									"description": "['id', 'vehicle__plate', 'created_at']",
+									"disabled": true
+								},
+								{
+									"key": "from",
+									"value": "2025-06-23",
+									"disabled": true
+								},
+								{
+									"key": "to",
+									"value": "2025-06-23",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Ticket Details ",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"1",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "KOC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Ticket",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}api/v1/tickets/2/delete/",
+							"host": [
+								"{{base_url}}api"
+							],
+							"path": [
+								"v1",
+								"tickets",
+								"2",
+								"delete",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "KOC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Incomplete Tickets List ",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/incomplete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"incomplete",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Second Weight Ticket",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"second_weight\": 12400.250,\n  \"second_weight_date\": \"2025-06-22T17:45:00\",\n  \"trailer_second_weight\": 2300.000\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/1/second-weight/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"1",
+								"second-weight",
+								""
+							],
+							"query": [
+								{
+									"key": "page_size",
+									"value": "15",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "KOC",
+									"disabled": true
+								},
+								{
+									"key": "ordering",
+									"value": "-id",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get the number of total tickets for a year",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/analytics/yearly/?year=2024",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"analytics",
+								"yearly",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get ticket-summary-analytics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/analytics/summary/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"analytics",
+								"summary",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024",
+									"disabled": true
+								},
+								{
+									"key": "mode",
+									"value": "weekly",
+									"description": "deafult 7 days, weekly | monthly",
+									"disabled": true
+								},
+								{
+									"key": "month",
+									"value": "4",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get generated pdf for a ticket",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/7/print",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"7",
+								"print"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Print",
+			"item": [
+				{
+					"name": "get templates available",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/print",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"print"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update default printer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/tickets/print/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								"print",
+								"2",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

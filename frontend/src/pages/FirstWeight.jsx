@@ -164,7 +164,7 @@ const FirstWeight = () => {
     useEffect(() => {
         if (!selectedScale) return;
 
-        const socket = new WebSocket(`ws://${SOCKET_URL}/ws/scale/`);
+        const socket = new WebSocket(`wss://${SOCKET_URL}/ws/scale/`);
 
         socket.onopen = () => {
             socket.send(JSON.stringify({ action: "init", scale_id: selectedScale }));

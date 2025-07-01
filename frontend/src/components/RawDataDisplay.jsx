@@ -10,7 +10,7 @@ const RawDataDisplay = ({ scaleId }) => {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socketUrl = `ws://${SOCKET_URL}/ws/scale/`;
+    const socketUrl = `wss://${SOCKET_URL}/ws/scale/`;
     const socket = new WebSocket(socketUrl);
     socketRef.current = socket;
 

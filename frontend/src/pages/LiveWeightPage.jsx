@@ -11,7 +11,7 @@ const LiveWeightPage = ({ scaleId }) => {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = new WebSocket(`ws://${SOCKET_URL}/ws/scale/`);
+    const socket = new WebSocket(`wss://${SOCKET_URL}/ws/scale/`);
     socketRef.current = socket;
 
     socket.onopen = () => {

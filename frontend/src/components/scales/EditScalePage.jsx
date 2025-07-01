@@ -10,11 +10,15 @@ const PARITY_CHOICES = ["none", "even", "odd", "mark", "space"];
 const STOP_BITS_CHOICES = [1, 1.5, 2];
 const FLOW_CONTROL_CHOICES = ["none", "hardware", "Xon/Xoff"];
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
+
 const EditScaleModal = ({ scaleId, onClose }) => {
   const [form, setForm] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/v1/business/scales/${scaleId}/`, {
+    fetch(`${BASE_URL}/business/scales/${scaleId}/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -57,7 +61,7 @@ const EditScaleModal = ({ scaleId, onClose }) => {
       ["ip", "port"].forEach((f) => delete payload[f]);
     }
 
-    await fetch(`http://localhost:8000/api/v1/business/scales/${scaleId}/`, {
+    await fetch(`${BASE_URL}/business/scales/${scaleId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

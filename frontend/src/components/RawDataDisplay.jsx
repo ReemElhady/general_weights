@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
+
 const RawDataDisplay = ({ scaleId }) => {
   const [socketStatus, setSocketStatus] = useState("جاري الاتصال...");
   const [structuredRaw, setStructuredRaw] = useState([]);
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socketUrl = "ws://localhost:8000/ws/scale/";
+    const socketUrl = `ws://${SOCKET_URL}/ws/scale/`;
     const socket = new WebSocket(socketUrl);
     socketRef.current = socket;
 

@@ -1,13 +1,17 @@
 // src/pages/LiveWeightPage.jsx
 import React, { useEffect, useState, useRef } from "react";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
+
 const LiveWeightPage = ({ scaleId }) => {
   const [liveWeight, setLiveWeight] = useState(null);
   const [status, setStatus] = useState("🕐 جاري الاتصال...");
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8000/ws/scale/");
+    const socket = new WebSocket(`ws://${SOCKET_URL}/ws/scale/`);
     socketRef.current = socket;
 
     socket.onopen = () => {

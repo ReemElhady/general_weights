@@ -8,6 +8,9 @@ import {
   saveEmailSettings,
 } from "../utils/settings";
 
+const BASE_URL = import.meta.env.VITE_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET;
+
 const Settings = () => {
   const { success, error } = useToast();
 
@@ -47,7 +50,7 @@ const Settings = () => {
           setWeightUnit(system.weighing_unit || "");
           setManipulationThreshold(system.manipulation_threshold || "");
           setEnableManipulation(system.manipulation_threshold > 0);
-          setCompanyLogoUrl(system.company_logo ? `http://localhost:8000${system.company_logo}` : "");
+          setCompanyLogoUrl(system.company_logo ? `${BASE_URL}${system.company_logo}` : "");
         }
 
         // email settings

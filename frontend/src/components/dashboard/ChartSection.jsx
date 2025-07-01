@@ -3,14 +3,17 @@ import { ChevronLeftIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { fetchTickets } from "../../utils/dashboard"; // استوردها من utils
+import { ticketAPI } from "../../utils/ticket"
 
 const ChartSection = () => {
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
     const loadTickets = async () => {
-      const data = await fetchTickets();
-      setTickets(data);
+      const data = await ticketAPI.get({
+        "page_size": 6,
+      });
+      setTickets(data.results);
     };
     loadTickets();
   }, []);

@@ -4,13 +4,13 @@ from .models import Scale, Client, Item
 
 @admin.register(Scale)
 class ScaleAdmin(admin.ModelAdmin):
-    list_display = ("name", "connection_type", "status", "ip")
+    list_display = ("id", "name", "connection_type", "status", "ip")
     search_fields = ("name", "manufacturer", "model")
     list_filter = ("connection_type", "status")
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ("name", "manager", "phone", "email", "status", "joined_at")
+    list_display = ("id", "name", "manager", "phone", "email", "status", "joined_at")
     list_filter = ("status", "joined_at")
     search_fields = ("name", "manager", "email")
 
@@ -18,6 +18,6 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'sector', 'type')
+    list_display = ("id", 'name', 'sector', 'type')
     list_filter = ('sector', 'type')
     search_fields = ('name',)

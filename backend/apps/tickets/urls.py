@@ -18,9 +18,9 @@ urlpatterns = [
     path('print', views.PrintTemplateView.as_view(), name='print-template-list'),
     path("print/<int:pk>/", views.PrintTemplateUpdate.as_view(), name="print-template-update"),
 
-    # path('<int:id>/export/', views.TicketExportExcelAPIView.as_view(), name='ticket-export-excel'),
-    # path('<int:pk>/export-pdf/', views.ExportTicketPDFView.as_view(), name='ticket_export_pdf'),
+    path('<int:id>/export/', views.TicketExportExcelAPIView.as_view(), name='ticket-export-excel'),
+    path('<int:pk>/export-pdf/', views.ExportTicketPDFView.as_view(), name='ticket_export_pdf'),
     
-    # path('export-excel/', views.ExportFilteredTicketsExcelAPIView.as_view()),
-    # path('export-pdf/', views.ExportFilteredTicketsPDFAPIView.as_view()),
+    path('export-excel/', views.ExportFilteredTicketsExcelAPIView.as_view()),
+    path('export-pdf/', views.ExportFilteredTicketsPDFAPIView.as_view()),
 ]

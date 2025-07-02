@@ -336,6 +336,8 @@ class ScaleConsumer(AsyncWebsocketConsumer):
                                 raw_read = raw_read.split(end_marker)[0] + end_marker
                                 break
 
+                        print(f"Data  {raw_read}")
+
                         structured_raw = transform_raw_to_list(raw_read)
 
                         weight_segment = structured_raw[

@@ -28,9 +28,9 @@ from apps.utils.render_template import render_template
 from rest_framework.permissions import AllowAny
 from apps.utils.parse_datetime import parse_datetime_str
 from datetime import datetime
-# import pandas as pd
-# from reportlab.pdfgen import canvas
-# import io
+import pandas as pd
+from reportlab.pdfgen import canvas
+import io
 
 
 class TicketFirstWeightAPIView(APIView):
@@ -484,250 +484,250 @@ class TicketPrintPDFView(APIView):
         return response
 
 
-# class TicketExportExcelAPIView(APIView):
-#     def get(self, request, id):
-#         try:
-#             ticket = Ticket.objects.get(pk=id)
-#         except Ticket.DoesNotExist:
-#             return Response({"error": "Ticket not found"}, status=404)
+class TicketExportExcelAPIView(APIView):
+    def get(self, request, id):
+        try:
+            ticket = Ticket.objects.get(pk=id)
+        except Ticket.DoesNotExist:
+            return Response({"error": "Ticket not found"}, status=404)
 
-#         data = [
-#             {
-#                 "Ticket ID": ticket.id,
-#                 "Ticket Number": ticket.ticket_number,
-#                 "Ticket Type": dict(Ticket_Types).get(ticket.ticket_type, ""),
-#                 "Vehicle": ticket.vehicle.plate if ticket.vehicle else "",
-#                 "Trailer Plate": ticket.trailer_plate_number or "",
-#                 "Driver": ticket.driver.name if ticket.driver else "",
-#                 "Customer": ticket.customer.name if ticket.customer else "",
-#                 "Item": ticket.item.name if ticket.item else "",
-#                 "Farm": ticket.farm or "",
-#                 "Boxes Number": ticket.boxes_number or "",
-#                 "Birds Number": ticket.birds_number or "",
-#                 "Gas Ratio": ticket.gas_ratio or "",
-#                 "First Weight": ticket.first_weight,
-#                 "First Weight Date": ticket.first_weight_date,
-#                 "Trailer First Weight": ticket.trailer_first_weight,
-#                 "Second Weight": ticket.second_weight,
-#                 "Second Weight Date": ticket.second_weight_date,
-#                 "Trailer Second Weight": ticket.trailer_second_weight,
-#                 "Net Weight": ticket.net_weight,
-#                 "Is Completed": "Yes" if ticket.is_completed else "No",
-#                 "Notes": ticket.notes or "",
-#                 "Created At": ticket.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-#             }
-#         ]
+        data = [
+            {
+                "Ticket ID": ticket.id,
+                "Ticket Number": ticket.ticket_number,
+                "Ticket Type": dict(Ticket_Types).get(ticket.ticket_type, ""),
+                "Vehicle": ticket.vehicle.plate if ticket.vehicle else "",
+                "Trailer Plate": ticket.trailer_plate_number or "",
+                "Driver": ticket.driver.name if ticket.driver else "",
+                "Customer": ticket.customer.name if ticket.customer else "",
+                "Item": ticket.item.name if ticket.item else "",
+                "Farm": ticket.farm or "",
+                "Boxes Number": ticket.boxes_number or "",
+                "Birds Number": ticket.birds_number or "",
+                "Gas Ratio": ticket.gas_ratio or "",
+                "First Weight": ticket.first_weight,
+                "First Weight Date": ticket.first_weight_date,
+                "Trailer First Weight": ticket.trailer_first_weight,
+                "Second Weight": ticket.second_weight,
+                "Second Weight Date": ticket.second_weight_date,
+                "Trailer Second Weight": ticket.trailer_second_weight,
+                "Net Weight": ticket.net_weight,
+                "Is Completed": "Yes" if ticket.is_completed else "No",
+                "Notes": ticket.notes or "",
+                "Created At": ticket.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        ]
 
-#         df = pd.DataFrame(data)
+        df = pd.DataFrame(data)
 
-#         buffer = io.BytesIO()
-#         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-#             df.to_excel(writer, index=False, sheet_name="Ticket Details")
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Ticket Details")
 
-#         buffer.seek(0)
-#         response = HttpResponse(
-#             buffer,
-#             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-#         )
-#         response["Content-Disposition"] = (
-#             f"attachment; filename=ticket_{ticket.id}.xlsx"
-#         )
-#         return response
-
-
-# class ExportTicketPDFView(APIView):
-#     def get(self, request, pk):
-#         try:
-#             ticket = Ticket.objects.get(pk=pk)
-#         except Ticket.DoesNotExist:
-#             return Response({"error": "Ticket not found"}, status=404)
-
-#         buffer = io.BytesIO()
-#         p = canvas.Canvas(buffer)
-
-#         y = 800
-#         line_height = 20
-
-#         p.drawString(100, y, f"Ticket ID: {ticket.id}")
-#         y -= line_height
-#         p.drawString(100, y, f"Ticket Number: {ticket.ticket_number}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Ticket Type: {dict(Ticket_Types).get(ticket.ticket_type, '')}"
-#         )
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Vehicle: {ticket.vehicle.plate if ticket.vehicle else ''}"
-#         )
-#         y -= line_height
-#         p.drawString(100, y, f"Trailer Plate: {ticket.trailer_plate_number or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Driver: {ticket.driver.name if ticket.driver else ''}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Customer: {ticket.customer.name if ticket.customer else ''}"
-#         )
-#         y -= line_height
-#         p.drawString(100, y, f"Item: {ticket.item.name if ticket.item else ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Farm: {ticket.farm or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Boxes Number: {ticket.boxes_number or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Birds Number: {ticket.birds_number or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Gas Ratio: {ticket.gas_ratio or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"First Weight: {ticket.first_weight or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"First Weight Date: {ticket.first_weight_date or ''}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Trailer First Weight: {ticket.trailer_first_weight or ''}"
-#         )
-#         y -= line_height
-#         p.drawString(100, y, f"Second Weight: {ticket.second_weight or ''}")
-#         y -= line_height
-#         p.drawString(100, y, f"Second Weight Date: {ticket.second_weight_date or ''}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Trailer Second Weight: {ticket.trailer_second_weight or ''}"
-#         )
-#         y -= line_height
-#         p.drawString(100, y, f"Net Weight: {ticket.net_weight or ''}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Status: {'Completed' if ticket.is_completed else 'Incomplete'}"
-#         )
-#         y -= line_height
-#         p.drawString(100, y, f"Notes: {ticket.notes or ''}")
-#         y -= line_height
-#         p.drawString(
-#             100, y, f"Created At: {ticket.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
-#         )
-#         y -= line_height
-
-#         p.showPage()
-#         p.save()
-#         buffer.seek(0)
-
-#         response = HttpResponse(buffer, content_type="application/pdf")
-#         response["Content-Disposition"] = f"attachment; filename=ticket_{ticket.id}.pdf"
-#         return response
+        buffer.seek(0)
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = (
+            f"attachment; filename=ticket_{ticket.id}.xlsx"
+        )
+        return response
 
 
-# class ExportFilteredTicketsExcelAPIView(APIView):
-#     def get(self, request):
-#         tickets = Ticket.objects.all()
+class ExportTicketPDFView(APIView):
+    def get(self, request, pk):
+        try:
+            ticket = Ticket.objects.get(pk=pk)
+        except Ticket.DoesNotExist:
+            return Response({"error": "Ticket not found"}, status=404)
 
-#         # Ignore pagination fields (page, page_size)
-#         query_params = request.query_params.copy()
-#         query_params.pop("page", None)
-#         query_params.pop("page_size", None)
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer)
 
-#         # Apply filters
-#         is_completed = query_params.get("is_completed")
-#         if is_completed is not None and is_completed != "":
-#             tickets = tickets.filter(is_completed=(is_completed.lower() == "true"))
+        y = 800
+        line_height = 20
 
-#         search = query_params.get("search")
-#         if search:
-#             tickets = tickets.filter(vehicle__plate__icontains=search)
+        p.drawString(100, y, f"Ticket ID: {ticket.id}")
+        y -= line_height
+        p.drawString(100, y, f"Ticket Number: {ticket.ticket_number}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Ticket Type: {dict(Ticket_Types).get(ticket.ticket_type, '')}"
+        )
+        y -= line_height
+        p.drawString(
+            100, y, f"Vehicle: {ticket.vehicle.plate if ticket.vehicle else ''}"
+        )
+        y -= line_height
+        p.drawString(100, y, f"Trailer Plate: {ticket.trailer_plate_number or ''}")
+        y -= line_height
+        p.drawString(100, y, f"Driver: {ticket.driver.name if ticket.driver else ''}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Customer: {ticket.customer.name if ticket.customer else ''}"
+        )
+        y -= line_height
+        p.drawString(100, y, f"Item: {ticket.item.name if ticket.item else ''}")
+        y -= line_height
+        p.drawString(100, y, f"Farm: {ticket.farm or ''}")
+        y -= line_height
+        p.drawString(100, y, f"Boxes Number: {ticket.boxes_number or ''}")
+        y -= line_height
+        p.drawString(100, y, f"Birds Number: {ticket.birds_number or ''}")
+        y -= line_height
+        p.drawString(100, y, f"Gas Ratio: {ticket.gas_ratio or ''}")
+        y -= line_height
+        p.drawString(100, y, f"First Weight: {ticket.first_weight or ''}")
+        y -= line_height
+        p.drawString(100, y, f"First Weight Date: {ticket.first_weight_date or ''}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Trailer First Weight: {ticket.trailer_first_weight or ''}"
+        )
+        y -= line_height
+        p.drawString(100, y, f"Second Weight: {ticket.second_weight or ''}")
+        y -= line_height
+        p.drawString(100, y, f"Second Weight Date: {ticket.second_weight_date or ''}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Trailer Second Weight: {ticket.trailer_second_weight or ''}"
+        )
+        y -= line_height
+        p.drawString(100, y, f"Net Weight: {ticket.net_weight or ''}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Status: {'Completed' if ticket.is_completed else 'Incomplete'}"
+        )
+        y -= line_height
+        p.drawString(100, y, f"Notes: {ticket.notes or ''}")
+        y -= line_height
+        p.drawString(
+            100, y, f"Created At: {ticket.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        y -= line_height
 
-#         from_date = query_params.get("from")
-#         to_date = query_params.get("to")
-#         if from_date:
-#             tickets = tickets.filter(created_at__date__gte=from_date)
-#         if to_date:
-#             tickets = tickets.filter(created_at__date__lte=to_date)
+        p.showPage()
+        p.save()
+        buffer.seek(0)
 
-#         ordering = query_params.get("ordering", "-id")
-#         tickets = tickets.order_by(ordering)
-
-#         # Prepare Excel data
-#         data = []
-#         for ticket in tickets:
-#             data.append(
-#                 {
-#                     "Ticket ID": ticket.id,
-#                     "Ticket Number": ticket.ticket_number,
-#                     "Ticket Type": dict(Ticket_Types).get(ticket.ticket_type, ""),
-#                     "Vehicle": ticket.vehicle.plate if ticket.vehicle else "",
-#                     "Driver": ticket.driver.name if ticket.driver else "",
-#                     "Customer": ticket.customer.name if ticket.customer else "",
-#                     "Item": ticket.item.name if ticket.item else "",
-#                     "First Weight": ticket.first_weight,
-#                     "Second Weight": ticket.second_weight,
-#                     "Net Weight": ticket.net_weight,
-#                     "Status": "Completed" if ticket.is_completed else "Incomplete",
-#                     "Created At": ticket.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-#                 }
-#             )
-
-#         df = pd.DataFrame(data)
-#         buffer = io.BytesIO()
-#         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-#             df.to_excel(writer, index=False, sheet_name="Tickets")
-
-#         buffer.seek(0)
-#         response = HttpResponse(
-#             buffer,
-#             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-#         )
-#         response["Content-Disposition"] = 'attachment; filename="filtered_tickets.xlsx"'
-#         return response
+        response = HttpResponse(buffer, content_type="application/pdf")
+        response["Content-Disposition"] = f"attachment; filename=ticket_{ticket.id}.pdf"
+        return response
 
 
-# class ExportFilteredTicketsPDFAPIView(APIView):
-#     def get(self, request):
-#         tickets = Ticket.objects.all()
+class ExportFilteredTicketsExcelAPIView(APIView):
+    def get(self, request):
+        tickets = Ticket.objects.all()
 
-#         # Ignore pagination fields (page, page_size)
-#         query_params = request.query_params.copy()
-#         query_params.pop("page", None)
-#         query_params.pop("page_size", None)
+        # Ignore pagination fields (page, page_size)
+        query_params = request.query_params.copy()
+        query_params.pop("page", None)
+        query_params.pop("page_size", None)
 
-#         # Apply filters
-#         is_completed = query_params.get("is_completed")
-#         if is_completed is not None and is_completed != "":
-#             tickets = tickets.filter(is_completed=(is_completed.lower() == "true"))
+        # Apply filters
+        is_completed = query_params.get("is_completed")
+        if is_completed is not None and is_completed != "":
+            tickets = tickets.filter(is_completed=(is_completed.lower() == "true"))
 
-#         search = query_params.get("search")
-#         if search:
-#             tickets = tickets.filter(vehicle__plate__icontains=search)
+        search = query_params.get("search")
+        if search:
+            tickets = tickets.filter(vehicle__plate__icontains=search)
 
-#         from_date = query_params.get("from")
-#         to_date = query_params.get("to")
-#         if from_date:
-#             tickets = tickets.filter(created_at__date__gte=from_date)
-#         if to_date:
-#             tickets = tickets.filter(created_at__date__lte=to_date)
+        from_date = query_params.get("from")
+        to_date = query_params.get("to")
+        if from_date:
+            tickets = tickets.filter(created_at__date__gte=from_date)
+        if to_date:
+            tickets = tickets.filter(created_at__date__lte=to_date)
 
-#         ordering = query_params.get("ordering", "-id")
-#         tickets = tickets.order_by(ordering)
+        ordering = query_params.get("ordering", "-id")
+        tickets = tickets.order_by(ordering)
 
-#         # Prepare PDF
-#         buffer = io.BytesIO()
-#         p = canvas.Canvas(buffer)
+        # Prepare Excel data
+        data = []
+        for ticket in tickets:
+            data.append(
+                {
+                    "Ticket ID": ticket.id,
+                    "Ticket Number": ticket.ticket_number,
+                    "Ticket Type": dict(Ticket_Types).get(ticket.ticket_type, ""),
+                    "Vehicle": ticket.vehicle.plate if ticket.vehicle else "",
+                    "Driver": ticket.driver.name if ticket.driver else "",
+                    "Customer": ticket.customer.name if ticket.customer else "",
+                    "Item": ticket.item.name if ticket.item else "",
+                    "First Weight": ticket.first_weight,
+                    "Second Weight": ticket.second_weight,
+                    "Net Weight": ticket.net_weight,
+                    "Status": "Completed" if ticket.is_completed else "Incomplete",
+                    "Created At": ticket.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+            )
 
-#         y = 800
-#         line_height = 15
+        df = pd.DataFrame(data)
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Tickets")
 
-#         for ticket in tickets:
-#             p.drawString(
-#                 50,
-#                 y,
-#                 f"Ticket ID: {ticket.id} | Ticket Number: {ticket.ticket_number} | Vehicle: {ticket.vehicle.plate if ticket.vehicle else ''} | Customer: {ticket.customer.name if ticket.customer else ''} | Net Weight: {ticket.net_weight or 0}",
-#             )
-#             y -= line_height
+        buffer.seek(0)
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="filtered_tickets.xlsx"'
+        return response
 
-#             if y < 100:
-#                 p.showPage()
-#                 y = 800
 
-#         p.save()
-#         buffer.seek(0)
+class ExportFilteredTicketsPDFAPIView(APIView):
+    def get(self, request):
+        tickets = Ticket.objects.all()
 
-#         response = HttpResponse(buffer, content_type="application/pdf")
-#         response["Content-Disposition"] = 'attachment; filename="filtered_tickets.pdf"'
-#         return response
+        # Ignore pagination fields (page, page_size)
+        query_params = request.query_params.copy()
+        query_params.pop("page", None)
+        query_params.pop("page_size", None)
+
+        # Apply filters
+        is_completed = query_params.get("is_completed")
+        if is_completed is not None and is_completed != "":
+            tickets = tickets.filter(is_completed=(is_completed.lower() == "true"))
+
+        search = query_params.get("search")
+        if search:
+            tickets = tickets.filter(vehicle__plate__icontains=search)
+
+        from_date = query_params.get("from")
+        to_date = query_params.get("to")
+        if from_date:
+            tickets = tickets.filter(created_at__date__gte=from_date)
+        if to_date:
+            tickets = tickets.filter(created_at__date__lte=to_date)
+
+        ordering = query_params.get("ordering", "-id")
+        tickets = tickets.order_by(ordering)
+
+        # Prepare PDF
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer)
+
+        y = 800
+        line_height = 15
+
+        for ticket in tickets:
+            p.drawString(
+                50,
+                y,
+                f"Ticket ID: {ticket.id} | Ticket Number: {ticket.ticket_number} | Vehicle: {ticket.vehicle.plate if ticket.vehicle else ''} | Customer: {ticket.customer.name if ticket.customer else ''} | Net Weight: {ticket.net_weight or 0}",
+            )
+            y -= line_height
+
+            if y < 100:
+                p.showPage()
+                y = 800
+
+        p.save()
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="filtered_tickets.pdf"'
+        return response

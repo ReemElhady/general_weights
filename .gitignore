@@ -7,3 +7,5 @@ migrations
 .vite
 
 media/
+logs
+

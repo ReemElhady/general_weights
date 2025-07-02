@@ -11,7 +11,7 @@ export const getSystemSettings = async (token) => {
 };
 
 export const getEmailSettings = async (token) => {
-  const res = await fetch(`${BASE_URL}/emailsettings/`, {
+  const res = await fetch(`${BASE_URL}/company/emailsettings/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   console.log(res)
@@ -21,14 +21,14 @@ export const getEmailSettings = async (token) => {
 
 export const saveSystemSettings = async (token, systemForm, systemId) => {
   if (systemId) {
-    return axios.put(`${BASE_URL}/systemsettings/${systemId}/`, systemForm, {
+    return axios.put(`${BASE_URL}/company/systemsettings/${systemId}/`, systemForm, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
       },
     });
   } else {
-    return axios.post(`${BASE_URL}/systemsettings/`, systemForm, {
+    return axios.post(`${BASE_URL}/company/systemsettings/`, systemForm, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
@@ -39,8 +39,8 @@ export const saveSystemSettings = async (token, systemForm, systemId) => {
 
 export const saveEmailSettings = async (token, emailData, emailId) => {
   const url = emailId
-    ? `${BASE_URL}/emailsettings/${emailId}/`
-    : `${BASE_URL}/emailsettings/`;
+    ? `${BASE_URL}/company/emailsettings/${emailId}/`
+    : `${BASE_URL}/company/emailsettings/`;
   const method = emailId ? "PUT" : "POST";
   return fetch(url, {
     method,

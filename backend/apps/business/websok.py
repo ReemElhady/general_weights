@@ -196,6 +196,7 @@ class ScaleConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             data = json.loads(text_data)  # Parse incoming JSON
+            print(f"Data {data}")
             action = data.get("action")
             scale_id = data.get("scale_id")
 
@@ -335,8 +336,6 @@ class ScaleConsumer(AsyncWebsocketConsumer):
                             if end_marker in raw_read:
                                 raw_read = raw_read.split(end_marker)[0] + end_marker
                                 break
-
-                        print(f"Data  {raw_read}")
 
                         structured_raw = transform_raw_to_list(raw_read)
 

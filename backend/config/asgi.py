@@ -14,11 +14,13 @@ django.setup()
 
 # استيراد WebSocket Consumer
 from apps.business.websok import ScaleConsumer  # ← تأكد أن المسار والاسم صح
+from apps.business.test_sock import TestConsumer
 
 # تعريف التطبيق
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": URLRouter([
         path("ws/scale/", ScaleConsumer.as_asgi()),  # WebSocket endpoint
+        path("ws/test/", TestConsumer.as_asgi()), 
     ]),
 })
